@@ -1,0 +1,13 @@
+{
+  "name": "세연이의 옷장",
+  "short_name": "세연이 옷장",
+  "lang": "ko-KR",
+  "start_url": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fff4df",
+  "theme_color": "#fff4df",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

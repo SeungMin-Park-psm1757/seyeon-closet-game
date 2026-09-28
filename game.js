@@ -280,7 +280,10 @@
     const categoryRail = $('.category-rail');
     const itemRail = $('.item-rail');
     if (categoryRail) {
+      const previousBehavior = categoryRail.style.scrollBehavior;
+      categoryRail.style.scrollBehavior = 'auto';
       categoryRail.scrollLeft = clampScroll(categoryRail, railScroll.categories);
+      categoryRail.style.scrollBehavior = previousBehavior;
       categoryRail.addEventListener('scroll', () => {
         railScroll.categories = categoryRail.scrollLeft;
         syncRailArrows('category');
@@ -288,7 +291,10 @@
     }
     if (itemRail) {
       const stored = Object.prototype.hasOwnProperty.call(railScroll.items, state.categoryId);
+      const previousBehavior = itemRail.style.scrollBehavior;
+      itemRail.style.scrollBehavior = 'auto';
       itemRail.scrollLeft = clampScroll(itemRail, stored ? railScroll.items[state.categoryId] : 0);
+      itemRail.style.scrollBehavior = previousBehavior;
       itemRail.addEventListener('scroll', () => {
         railScroll.items[state.categoryId] = itemRail.scrollLeft;
         syncRailArrows('item');

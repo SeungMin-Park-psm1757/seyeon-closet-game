@@ -55,7 +55,7 @@ button:focus-visible { outline: 4px solid #56aeb0; outline-offset: 2px; }
 .character-portrait svg { display: block; width: 100%; height: 100%; }
 .bottom-back { flex: 0 0 64px; min-height: 64px; border: 0; border-radius: 22px; background: #fff; box-shadow: 0 4px 0 #e7cbb4; font-size: 20px; font-weight: 900; }
 
-.editor-page { display: grid; grid-template-rows: auto minmax(190px, 1fr) 74px 119px 82px; gap: 0; padding: max(4px, env(safe-area-inset-top)) 10px max(4px, env(safe-area-inset-bottom)); background: #fff5e6; }
+.editor-page { display: grid; grid-template-rows: auto minmax(190px, 1fr) 74px 119px 82px; gap: 0; padding: max(4px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(4px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left)); background: #fff5e6; }
 .editor-header { z-index: 2; display: grid; grid-template-columns: 64px minmax(0, 1fr) 64px 64px; align-items: center; gap: 7px; min-height: 70px; padding: 0 2px 4px; }
 .editor-heading { display: grid; justify-items: center; gap: 2px; min-width: 0; text-align: center; }
 .editor-heading strong { overflow: hidden; max-width: 100%; font-size: clamp(16px, 4.7vw, 21px); text-overflow: ellipsis; white-space: nowrap; }
@@ -79,21 +79,25 @@ button:focus-visible { outline: 4px solid #56aeb0; outline-offset: 2px; }
 .doll-wrap svg { width: min(94%, 480px); height: auto; max-height: 100%; aspect-ratio: 3 / 4; filter: drop-shadow(0 7px 2px #76574325); overflow: visible; }
 .stage-caption { position: absolute; z-index: 3; right: 9px; bottom: 8px; max-width: 60%; padding: 7px 12px; border-radius: 16px; background: #fff9; font-size: 13px; font-weight: 800; }
 .sparkle-burst { position: absolute; z-index: 4; top: 28%; left: 17%; transform: translate(-50%, -50%); animation: pop .65s ease-out forwards; font-size: 58px; pointer-events: none; }
-.category-rail { display: flex; gap: 7px; overflow-x: auto; align-items: center; padding: 5px 1px; overscroll-behavior-x: contain; scrollbar-width: none; }
+.rail-shell { display: grid; grid-template-columns: 48px minmax(0, 1fr) 48px; align-items: center; gap: 4px; min-width: 0; }
+.rail-arrow { display: grid; place-items: center; width: 48px; height: 48px; padding: 0; border: 0; border-radius: 16px; background: #fff8ee; box-shadow: 0 3px 0 #e6ceb8; color: #805d55; font-size: 34px; font-weight: 900; line-height: 1; }
+.rail-arrow:disabled { opacity: .28; box-shadow: none; cursor: default; }
+.rail-arrow:not(:disabled):active { transform: translateY(2px) scale(.97); }
+.category-rail { display: flex; gap: 7px; overflow-x: auto; align-items: center; min-width: 0; padding: 5px 1px; overscroll-behavior-x: contain; scrollbar-width: none; scroll-behavior: smooth; }
 .category-rail::-webkit-scrollbar, .item-rail::-webkit-scrollbar, .album-grid::-webkit-scrollbar { display: none; }
 .category-button { flex: 0 0 70px; display: grid; place-items: center; gap: 1px; height: 66px; border: 2px solid transparent; border-radius: 19px; background: #fffaf3; box-shadow: 0 3px 0 #e8d2bd; }
 .category-button span { display: grid; place-items: center; width: 29px; height: 29px; color: #78534d; line-height: 1; }
 .category-button span svg { width: 27px; height: 27px; }
 .category-button small { max-width: 68px; overflow: hidden; font-size: 11px; font-weight: 800; text-overflow: ellipsis; white-space: nowrap; }
 .category-button.active { border-color: #e68da7; background: #ffe1e9; box-shadow: 0 3px 0 #d889a0; }
-.item-rail { display: flex; gap: 9px; min-width: 0; overflow-x: auto; align-items: stretch; padding: 6px 1px 8px; overscroll-behavior-x: contain; scrollbar-width: none; }
+.item-rail { display: flex; gap: 9px; min-width: 0; overflow-x: auto; align-items: stretch; padding: 6px 1px 8px; overscroll-behavior-x: contain; scrollbar-width: none; scroll-behavior: smooth; }
 .item-card { position: relative; flex: 0 0 90px; display: grid; grid-template-rows: 70px auto; justify-items: center; align-content: center; gap: 2px; min-width: 0; min-height: 105px; padding: 4px; border: 2px solid #f1ddca; border-radius: 18px; background: #fffdf7; box-shadow: 0 3px 0 #e8d2bd; }
 .item-card.chosen { border-color: #e486a2; background: #fff0f4; }
 .item-card.chosen { animation: chosen-pop .2s ease-out; }
 .item-card.recommended { outline: 2px dashed #e8bd4f; outline-offset: -5px; }
 .recommend-badge { position: absolute; bottom: 7px; left: 6px; padding: 2px 5px; border-radius: 8px; background: #fff0b8; color: #775d2d; font-size: 9px; font-weight: 900; line-height: 1.2; }
-.item-picture { display: grid; place-items: center; width: 68px; height: 68px; border-radius: 17px; background: color-mix(in srgb, var(--swatch), white 76%); font-size: 34px; }
-.item-picture svg { width: 100%; height: 100%; overflow: visible; }
+.item-picture { display: grid; place-items: center; width: 68px; height: 68px; overflow: hidden; border-radius: 17px; background: color-mix(in srgb, var(--swatch), white 76%); font-size: 34px; }
+.item-picture svg { width: 100%; height: 100%; overflow: hidden; }
 .item-card strong { width: 100%; overflow: hidden; font-size: 10px; text-align: center; text-overflow: ellipsis; white-space: nowrap; }
 .item-card i { position: absolute; top: -5px; right: -4px; display: grid; place-items: center; width: 25px; height: 25px; border-radius: 50%; background: #83c986; color: white; font-size: 15px; font-style: normal; }
 .item-card.locked { opacity: .75; }
@@ -144,6 +148,10 @@ button:focus-visible { outline: 4px solid #56aeb0; outline-offset: 2px; }
 @keyframes pop { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.4); } 60% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); } }
 @keyframes dance { 35% { transform: translateY(-23px) rotate(-8deg); } 70% { transform: translateY(-13px) rotate(7deg); } }
 
+@media (max-height: 680px), (orientation: landscape) and (max-height: 500px) {
+  #app { overflow-y: auto; overscroll-behavior-y: contain; }
+  .editor-page { height: auto; min-height: 700px; }
+}
 @media (max-height: 740px) {
   .editor-page { grid-template-rows: auto minmax(175px, 1fr) 66px 115px 72px; }
   .editor-header { min-height: 64px; }

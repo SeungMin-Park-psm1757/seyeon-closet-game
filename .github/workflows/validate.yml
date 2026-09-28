@@ -17,6 +17,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - name: Check JavaScript syntax
         run: |
           node --check game.js
@@ -27,3 +30,7 @@ jobs:
         run: node check-data.js
       - name: Audit registered PNG art
         run: node audit-assets.js
+      - name: Verify runtime WebP freshness
+        run: |
+          python -m pip install --disable-pip-version-check Pillow
+          python scripts/verify-runtime-assets.py

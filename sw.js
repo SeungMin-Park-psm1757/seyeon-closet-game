@@ -1,5 +1,5 @@
-const CACHE = 'seyeon-closet-v7';
-const FILES = ['./', './index.html', './game.css', './game.js', './data.js', './assets/assetRegistry.js', './manifest.webmanifest', './icon.svg'];
+const CACHE = 'seyeon-closet-v8';
+const FILES = ['./', './index.html', './game.css', './game.js', './data.js', './outfit-rules.js', './assets/assetRegistry.js', './manifest.webmanifest', './icon.svg'];
 
 self.addEventListener('install', event => {
   event.waitUntil(Promise.all([

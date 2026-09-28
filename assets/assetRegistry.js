@@ -21,7 +21,10 @@ window.ASSETS = {
     shoes_01: 'assets/custom/clothes/shoes_01.png'
   },
   backgrounds: {
-    room: 'assets/custom/backgrounds/room.png'
+    room: 'assets/custom/backgrounds/room.png',
+    garden: 'assets/custom/backgrounds/garden.png',
+    castle: 'assets/custom/backgrounds/castle.png',
+    beach: 'assets/custom/backgrounds/beach.png'
   },
   audio: {
     bgm: null,

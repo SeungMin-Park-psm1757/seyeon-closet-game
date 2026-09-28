@@ -14,7 +14,7 @@
 
 투명 PNG 원본을 `assets/custom/` 아래에 넣고 `assets/assetRegistry.js`에서 데이터 ID에 경로를 연결하면 캐릭터나 의상을 교체할 수 있습니다. 마스터는 **1086×1448(3:4)** 전신 캔버스이며, 게임은 이를 360×480 viewBox에 그대로 맞춰 표시합니다. `python scripts/convert-assets.py`가 픽셀 손실 없는 WebP 런타임 사본을 `assets/runtime/`에 만듭니다. 원본 PNG는 변환 후에도 유지됩니다.
 
-현재 제작 시안은 `girl01` 몸체, `hair_01`, `dress_01`~`dress_12`, `shoes_01`, `room` 배경입니다. 나머지 캐릭터와 의상은 기존 SVG 그림을 사용합니다. 사진첩은 이미지 파일 대신 코디 ID와 배경 ID를 저장하고 현재 자산으로 카드를 다시 그립니다.
+현재 제작 시안은 `girl01` 몸체, `hair_01`, `dress_01`~`dress_12`, `shoes_01`, `room`·`garden`·`castle`·`beach` 배경입니다. 나머지 캐릭터와 의상은 기존 SVG 그림을 사용합니다. 사진첩은 이미지 파일 대신 코디 ID와 배경 ID를 저장하고 현재 자산으로 카드를 다시 그립니다.
 
 효과음과 배경음은 Web Audio로 만든 임시 소리입니다. 정식 음원은 `/assets/custom/audio/`에 추가한 뒤 같은 registry의 `audio` 경로에 등록하세요.
 

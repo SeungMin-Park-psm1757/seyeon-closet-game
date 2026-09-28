@@ -16,7 +16,7 @@ The repository audit has verified that the current `girl01`, `hair_01`, `dress_0
 
 ## 2. Background art
 
-Backgrounds do not share the wearable canvas. They are rendered as scene art with cover behavior. The current `room.png` is 1402 × 1122 and is opaque.
+Backgrounds do not share the wearable canvas and are rendered with cover behavior. `room.png` is 1402 × 1122; the new `garden.png`, `castle.png`, and `beach.png` are 1086 × 1448 portrait scenes, all opaque.
 
 Keep important visual subjects away from the extreme edges because phone aspect ratios vary.
 
@@ -64,7 +64,7 @@ GitHub Actions runs the same checks on the active development branches.
 
 ## 6. Performance policy
 
-Current custom art is **10.08 MiB across 16 PNG masters** and **6.91 MiB across 16 lossless WebP runtime files** (31.4% smaller, with pixel-exact RGBA round-trips). Keep PNG masters as editable source.
+Current custom art is **14.72 MiB across 19 PNG masters** and **10.61 MiB across 19 lossless WebP runtime files** (27.9% smaller, with pixel-exact RGBA round-trips). Keep PNG masters as editable source.
 
 The current pipeline:
 
@@ -83,6 +83,6 @@ Do not mass-produce all 104 item arts yet. First complete one polished vertical 
 - head accessory;
 - bag;
 - prop;
-- at least three polished backgrounds.
+- additional backgrounds beyond the completed room, garden, castle, and beach scenes.
 
 After the 3:4 runtime normalization and mobile visual QA are accepted, expand the catalog.

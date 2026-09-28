@@ -8,6 +8,7 @@ on:
       - codex/art-direction-v3
       - codex/art-direction-v4-story-mode
       - codex/v5-fit-and-scroll-fixes
+      - codex/v6-character-fit-fixes
       - feature/kids-dressup-game-v1
       - main
   pull_request:
@@ -34,6 +35,8 @@ jobs:
         run: node check-data.js
       - name: Validate outfit state rules
         run: node scripts/test-outfit-rules.js
+      - name: Validate character art compatibility
+        run: node scripts/test-character-compatibility.js
       - name: Audit registered PNG art
         run: node audit-assets.js
       - name: Require complete story mode art

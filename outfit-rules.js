@@ -12,6 +12,10 @@
     return itemById instanceof Map ? itemById.get(id) : itemById[id];
   }
 
+  function isCompatible(item, characterId) {
+    return !item?.compatibleCharacters || !characterId || item.compatibleCharacters.includes(characterId);
+  }
+
   function normalizeOutfit(input, itemById, options = {}) {
     const source = input && typeof input === 'object' && !Array.isArray(input) ? input : {};
     const result = {};
@@ -19,7 +23,7 @@
     for (const [category, id] of Object.entries(source)) {
       if (typeof id !== 'string') continue;
       const item = lookup(itemById, id);
-      if (!item || item.category !== category) continue;
+      if (!item || item.category !== category || !isCompatible(item, options.characterId)) continue;
       result[category] = id;
     }
 
@@ -34,21 +38,21 @@
     const defaultHair = options.defaultHair === undefined ? 'hair_01' : options.defaultHair;
     if (!result.hair && defaultHair) {
       const hair = lookup(itemById, defaultHair);
-      if (hair && hair.category === 'hair') result.hair = defaultHair;
+      if (hair && hair.category === 'hair' && isCompatible(hair, options.characterId)) result.hair = defaultHair;
     }
 
     return result;
   }
 
-  function applyItemSelection(outfit, itemId, itemById) {
-    const current = normalizeOutfit(outfit, itemById);
+  function applyItemSelection(outfit, itemId, itemById, options = {}) {
+    const current = normalizeOutfit(outfit, itemById, options);
     const item = lookup(itemById, itemId);
-    if (!item) return current;
+    if (!item || !isCompatible(item, options.characterId)) return current;
 
     if (current[item.category] === item.id && item.category !== 'hair') {
       const next = { ...current };
       delete next[item.category];
-      return normalizeOutfit(next, itemById);
+      return normalizeOutfit(next, itemById, options);
     }
 
     const next = { ...current };
@@ -68,7 +72,7 @@
     }
 
     next[item.category] = item.id;
-    return normalizeOutfit(next, itemById);
+    return normalizeOutfit(next, itemById, options);
   }
 
   function hasConflict(outfit) {
@@ -79,34 +83,35 @@
     );
   }
 
-  function buildRandomOutfit(items, itemById, random = Math.random, unlocked = () => true) {
+  function buildRandomOutfit(items, itemById, random = Math.random, unlocked = () => true, options = {}) {
     const choose = list => list.length ? list[Math.floor(random() * list.length)] : null;
-    const byCategory = category => items.filter(item => item.category === category && unlocked(item));
+    const byCategory = category => items.filter(item => item.category === category && unlocked(item) && isCompatible(item, options.characterId));
     let result = {};
 
     const hair = choose(byCategory('hair'));
-    if (hair) result = applyItemSelection(result, hair.id, itemById);
+    if (hair) result = applyItemSelection(result, hair.id, itemById, options);
 
     const useDress = random() < 0.55;
     const main = choose(byCategory(useDress ? 'dress' : 'top'));
-    if (main) result = applyItemSelection(result, main.id, itemById);
+    if (main) result = applyItemSelection(result, main.id, itemById, options);
 
     if (!useDress && main) {
       const bottomCategory = random() < 0.55 ? 'pants' : 'skirt';
       const bottom = choose(byCategory(bottomCategory));
-      if (bottom) result = applyItemSelection(result, bottom.id, itemById);
+      if (bottom) result = applyItemSelection(result, bottom.id, itemById, options);
     }
 
     for (const category of ['shoes', 'accessory', 'headAccessory']) {
       const item = choose(byCategory(category));
-      if (item) result = applyItemSelection(result, item.id, itemById);
+      if (item) result = applyItemSelection(result, item.id, itemById, options);
     }
 
-    return normalizeOutfit(result, itemById);
+    return normalizeOutfit(result, itemById, options);
   }
 
   return {
     normalizeOutfit,
+    isCompatible,
     applyItemSelection,
     buildRandomOutfit,
     hasConflict,

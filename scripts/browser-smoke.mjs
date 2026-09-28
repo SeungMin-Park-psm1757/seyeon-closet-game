@@ -152,6 +152,47 @@ try {
   results.push('412x915 no page overflow PASS');
   await contextWide.close();
 
+  // Custom Se-yeon art must be filtered from other characters across restore, UI, random, story, and album paths.
+  const compatibilityProbe = await browser.newPage();
+  await compatibilityProbe.goto(baseURL, { waitUntil: 'networkidle' });
+  const customIds = await compatibilityProbe.evaluate(() => window.GAME_DATA.items.filter(item => item.asset).map(item => item.id));
+  const customCategories = await compatibilityProbe.evaluate(() => [...new Set(window.GAME_DATA.items.filter(item => item.asset).map(item => item.category))]);
+  await compatibilityProbe.context().close();
+  for (const characterId of ['girl02', 'bear01', 'rabbit01']) {
+    const compatibilityContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    const compatibilityPage = await compatibilityContext.newPage();
+    await compatibilityPage.addInitScript(() => localStorage.setItem('seyeon-closet-save', JSON.stringify({
+      characterId: 'girl01', mode: 'free', outfit: { hair:'hair_03', dress:'dress_05', top:'top_02', shoes:'shoes_02', headAccessory:'headAccessory_01', bag:'bag_01', toy:'toy_01' },
+      album: [{ characterId:'bear01', outfit:{ hair:'hair_03', dress:'dress_05', shoes:'shoes_02' }, backgroundId:'room', character:'곰돌이', background:'아이 방', items:['무지개 원피스'], date:'26. 9. 29.' }]
+    })));
+    await compatibilityPage.goto(baseURL, { waitUntil: 'networkidle' });
+    await compatibilityPage.locator('[data-action="characters"]').click();
+    await compatibilityPage.locator(`[data-character="${characterId}"]`).click();
+    const restored = await outfit(compatibilityPage);
+    assert(Object.values(restored).every(id => !customIds.includes(id)), `${characterId} must discard incompatible saved art`);
+    for (const category of customCategories) {
+      await compatibilityPage.locator(`[data-category="${category}"]`).click();
+      for (const id of customIds.filter(id => id.startsWith(`${category}_`))) {
+        assert((await compatibilityPage.locator(`[data-item="${id}"]`).count()) === 0, `${characterId} item rail must hide ${id}`);
+      }
+    }
+    for (let i = 0; i < 4; i += 1) {
+      await compatibilityPage.locator('[data-action="random"]').click();
+      const randomized = await outfit(compatibilityPage);
+      assert(Object.values(randomized).every(id => !customIds.includes(id)), `${characterId} magic outfit ${i} must exclude custom art`);
+    }
+    await compatibilityPage.locator('[data-action="home"]').click();
+    await compatibilityPage.locator('[data-action="stories"]').click();
+    await compatibilityPage.locator('[data-theme="picnic"]').click();
+    await compatibilityPage.locator(`[data-character="${characterId}"]`).click();
+    assert((await compatibilityPage.locator('[data-item="dress_05"]').count()) === 0, `${characterId} story must not offer incompatible recommendations`);
+    assert((await compatibilityPage.locator('.item-card.recommended[data-item^="dress_"]').count()) === 0, `${characterId} story must not recommend incompatible dresses`);
+    await compatibilityPage.locator('[data-action="home"]').click();
+    await compatibilityPage.locator('[data-action="album"]').click();
+    assert((await compatibilityPage.locator('.photo-art image[href*="/clothes/"]').count()) === 0, `${characterId} legacy album art must use compatible rendering`);
+    await compatibilityContext.close();
+  }
+  results.push('custom art compatibility: saved data, item rail, magic, story recommendations, and album PASS for 3 characters');
 
   // Story mode: all five themes must open with custom backgrounds and recommendation UI.
   const storyContext = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });

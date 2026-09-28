@@ -14,16 +14,21 @@
   ].map(([id, name, icon, layer, names]) => ({ id, name, icon, layer, names }));
 
   const colors = ['#f6a7c4','#ffd56a','#91d7e8','#bba7ef','#ff937f','#a8d989','#fbab75','#9dbbfa','#f4c4e5','#7dd5bb','#f486a1','#c8a6f3'];
-  const items = categories.flatMap(category => category.names.map((nameKo, i) => ({
-    id: `${category.id}_${String(i + 1).padStart(2, '0')}`,
-    category: category.id,
-    nameKo,
-    asset: window.ASSETS.items[`${category.id}_${String(i + 1).padStart(2, '0')}`] || null,
-    tags: ['cute', `color-${i % colors.length}`],
-    color: colors[i % colors.length],
-    variant: i,
-    layer: category.layer
-  })));
+  const items = categories.flatMap(category => category.names.map((nameKo, i) => {
+    const id = `${category.id}_${String(i + 1).padStart(2, '0')}`;
+    const asset = window.ASSETS.items[id] || null;
+    return {
+      id,
+      category: category.id,
+      nameKo,
+      asset,
+      ...(asset ? { compatibleCharacters: ['girl01'] } : {}),
+      tags: ['cute', `color-${i % colors.length}`],
+      color: colors[i % colors.length],
+      variant: i,
+      layer: category.layer
+    };
+  }));
 
   const characters = [
     { id: 'girl01', nameKo: '세연이', emoji: '👧🏻', skin: '#f5c79f', hair: '#49332f', kind: 'human', blush: '#f39bb1' },

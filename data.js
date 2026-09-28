@@ -50,11 +50,11 @@
       { id:'zoo', nameKo:'동물원', icon:'🦒', color:'#e5edd6', scenery:'zoo' }
     ],
     themes: [
-      { id:'picnic', title:'소풍 가는 날이에요!', icon:'🧺', background:'park', outfit:'dress_05' },
-      { id:'princess', title:'공주님 파티가 열렸어요!', icon:'👑', background:'castle', outfit:'dress_06' },
-      { id:'rainy', title:'비 오는 날 산책을 가요!', icon:'🌧️', background:'playground', outfit:'pants_02' },
-      { id:'birthday', title:'친구 생일파티에 가요!', icon:'🎂', background:'birthday', outfit:'dress_12' },
-      { id:'beach', title:'바닷가로 놀러 가요!', icon:'🐚', background:'beach', outfit:'dress_08' }
+      { id:'picnic', title:'소풍 가는 날!', promptKo:'소풍 갈 옷을 골라볼까?', icon:'🧺', background:'park', outfit:'dress_05', recommended:['dress_05','shoes_02','bag_01','toy_01'] },
+      { id:'princess', title:'공주님 파티!', promptKo:'공주님처럼 꾸며볼까?', icon:'👑', background:'castle', outfit:'dress_06', recommended:['dress_06','shoes_03','headAccessory_03'] },
+      { id:'rainy', title:'비 오는 날!', promptKo:'비 오는 날 옷을 골라볼까?', icon:'🌧️', background:'playground', outfit:'pants_02', recommended:['pants_02','top_02','shoes_02'] },
+      { id:'birthday', title:'생일 파티!', promptKo:'생일 파티 옷을 골라볼까?', icon:'🎂', background:'birthday', outfit:'dress_12', recommended:['dress_12','shoes_03','headAccessory_01','bag_01'] },
+      { id:'beach', title:'바닷가로 가요!', promptKo:'바닷가 옷을 골라볼까?', icon:'🐚', background:'beach', outfit:'dress_08', recommended:['dress_08','shoes_04','bag_02','toy_02'] }
     ]
   };
 })();

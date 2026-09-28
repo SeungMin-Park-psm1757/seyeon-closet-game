@@ -6,6 +6,7 @@ on:
       - codex/art-direction-v1
       - codex/art-direction-v2
       - codex/art-direction-v3
+      - codex/art-direction-v4-story-mode
       - feature/kids-dressup-game-v1
       - main
   pull_request:
@@ -31,8 +32,8 @@ jobs:
         run: node check-data.js
       - name: Audit registered PNG art
         run: node audit-assets.js
-      - name: Report story mode art readiness
-        run: node scripts/audit-story-mode.js
+      - name: Require complete story mode art
+        run: node scripts/audit-story-mode.js --strict
       - name: Verify runtime WebP freshness
         run: |
           python -m pip install --disable-pip-version-check Pillow

@@ -43,8 +43,9 @@ button:focus-visible { outline: 4px solid #56aeb0; outline-offset: 2px; }
 .prompt-line { margin: 8px 0 17px; text-align: center; font-size: 17px; font-weight: 700; }
 .round-button { flex: 0 0 64px; width: 64px; height: 64px; border-radius: 21px; color: #744f49; font-size: 31px; }
 .theme-list { display: grid; gap: 10px; width: min(100%, 430px); margin: 0 auto; overflow: auto; padding: 3px 3px 10px; overscroll-behavior: contain; }
-.theme-card { display: grid; grid-template-columns: 64px 1fr 24px; align-items: center; gap: 12px; min-height: 82px; padding: 9px 15px; border: 2px solid #f1d8bf; border-radius: 22px; background: #fffaf2; text-align: left; box-shadow: 0 3px 0 #ead1ba; }
-.theme-card span { font-size: 40px; text-align: center; }
+.theme-card { display: grid; grid-template-columns: 74px minmax(0, 1fr) 20px; align-items: center; gap: 12px; min-height: 82px; padding: 8px 12px; border: 2px solid #f1d8bf; border-radius: 22px; background: #fffaf2; text-align: left; box-shadow: 0 3px 0 #ead1ba; }
+.theme-thumb { display: grid; place-items: center; width: 70px; height: 62px; overflow: hidden; border: 2px solid #fff; border-radius: 16px; background-color: var(--swatch); background-position: center; background-size: cover; box-shadow: 0 2px 5px #73564024; font-size: 31px; }
+.theme-card strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .theme-card strong { font-size: clamp(15px, 4.4vw, 19px); }
 .theme-card b { font-size: 28px; color: #db8497; }
 .character-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; width: min(100%, 440px); margin: 10px auto 12px; }
@@ -90,6 +91,7 @@ button:focus-visible { outline: 4px solid #56aeb0; outline-offset: 2px; }
 .item-card.chosen { border-color: #e486a2; background: #fff0f4; }
 .item-card.chosen { animation: chosen-pop .2s ease-out; }
 .item-card.recommended { outline: 2px dashed #e8bd4f; outline-offset: -5px; }
+.recommend-badge { position: absolute; bottom: 7px; left: 6px; padding: 2px 5px; border-radius: 8px; background: #fff0b8; color: #775d2d; font-size: 9px; font-weight: 900; line-height: 1.2; }
 .item-picture { display: grid; place-items: center; width: 68px; height: 68px; border-radius: 17px; background: color-mix(in srgb, var(--swatch), white 76%); font-size: 34px; }
 .item-picture svg { width: 100%; height: 100%; overflow: visible; }
 .item-card strong { width: 100%; overflow: hidden; font-size: 10px; text-align: center; text-overflow: ellipsis; white-space: nowrap; }

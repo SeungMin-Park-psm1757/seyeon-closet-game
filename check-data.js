@@ -31,6 +31,13 @@ assert.ok(items.every(item => item.lockedAt == null), 'the toddler build must no
 
 assert.ok(themes.every(theme => backgroundIds.has(theme.background)), 'every theme must reference an existing background');
 assert.ok(themes.every(theme => itemIds.has(theme.outfit)), 'every theme must reference an existing outfit item');
+assert.ok(themes.every(theme => !theme.recommended || Array.isArray(theme.recommended)), 'theme recommendations must be arrays');
+for (const theme of themes) {
+  if (!theme.recommended) continue;
+  unique(theme.recommended, `${theme.id} recommendation`);
+  assert.ok(theme.recommended.every(id => itemIds.has(id)), `${theme.id} has an unknown recommended item`);
+  assert.ok(theme.recommended.includes(theme.outfit), `${theme.id} representative outfit must be recommended`);
+}
 assert.ok(themes.every(theme => typeof theme.title === 'string' && theme.title.trim().length > 0), 'every theme must have a title');
 assert.ok(themes.every(theme => typeof theme.icon === 'string' && theme.icon.trim().length > 0), 'every theme must have an icon');
 

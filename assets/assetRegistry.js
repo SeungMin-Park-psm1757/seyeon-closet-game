@@ -37,14 +37,17 @@ window.ASSETS = {
     dress_10: 'assets/custom/clothes/dress_10.png',
     dress_11: 'assets/custom/clothes/dress_11.png',
     dress_12: 'assets/custom/clothes/dress_12.png',
-    shoes_01: 'assets/custom/clothes/shoes_01.png'
+    shoes_01: 'assets/custom/clothes/shoes_01.png',
+    pants_02: 'assets/custom/clothes/pants_02.png'
   },
   backgrounds: {
     room: 'assets/custom/backgrounds/room.png',
     garden: 'assets/custom/backgrounds/garden.png',
     castle: 'assets/custom/backgrounds/castle.png',
     beach: 'assets/custom/backgrounds/beach.png',
-    birthday: 'assets/custom/backgrounds/birthday.png'
+    birthday: 'assets/custom/backgrounds/birthday.png',
+    park: 'assets/custom/backgrounds/park.png',
+    playground: 'assets/custom/backgrounds/playground.png'
   },
   audio: {
     bgm: null,

@@ -197,7 +197,7 @@
   }
 
   function renderThemes() {
-    return `<section class="selection-page"><header class="simple-header"><button class="round-button" data-action="home" aria-label="홈">⌂</button><h1>오늘은 어떤 날?</h1><span></span></header><p class="prompt-line">이야기를 골라 주세요</p><div class="theme-list">${data.themes.map(theme => `<button class="theme-card" data-theme="${theme.id}"><span>${theme.icon}</span><strong>${theme.title}</strong><b>›</b></button>`).join('')}</div></section>`;
+    return `<section class="selection-page"><header class="simple-header"><button class="round-button" data-action="home" aria-label="홈">⌂</button><h1>오늘은 어떤 날?</h1><span></span></header><p class="prompt-line">그림을 보고 골라요</p><div class="theme-list">${data.themes.map(theme => { const bg = backgroundById[theme.background], art = window.ASSETS.backgrounds[theme.background]; return `<button class="theme-card" data-theme="${theme.id}"><span class="theme-thumb ${art ? 'has-art' : ''}" style="--swatch:${bg.color}${art ? `;background-image:url('${esc(runtimeAsset(art))}')` : ''}" aria-hidden="true">${art ? '' : bg.icon}</span><strong>${esc(theme.title)}</strong><b aria-hidden="true">›</b></button>`; }).join('')}</div></section>`;
   }
 
   function renderCharacters() {
@@ -210,8 +210,8 @@
 
   function itemCard(item) {
     const locked = !unlocked(item), chosen = state.outfit[item.category] === item.id;
-    const recommended = state.mode === 'story' && data.themes.find(theme => theme.id === state.themeId)?.outfit === item.id;
-    return `<button class="item-card ${chosen ? 'chosen' : ''} ${recommended ? 'recommended' : ''} ${locked ? 'locked' : ''}" data-item="${item.id}" ${locked ? `aria-label="꾸미기 ${item.lockedAt}번 하면 열려요"` : ''}><span class="item-picture" style="--swatch:${item.color}">${itemPreview(item)}</span><strong>${locked ? '🔒' : esc(item.nameKo)}</strong>${chosen || recommended ? `<i>${chosen ? '✓' : '⭐'}</i>` : ''}</button>`;
+    const recommended = state.mode === 'story' && (data.themes.find(theme => theme.id === state.themeId)?.recommended || []).includes(item.id);
+    return `<button class="item-card ${chosen ? 'chosen' : ''} ${recommended ? 'recommended' : ''} ${locked ? 'locked' : ''}" data-item="${item.id}" ${locked ? `aria-label="꾸미기 ${item.lockedAt}번 하면 열려요"` : ''}><span class="item-picture" style="--swatch:${item.color}">${itemPreview(item)}</span><strong>${locked ? '🔒' : esc(item.nameKo)}</strong>${chosen || recommended ? `<i>${chosen ? '✓' : '⭐'}</i>` : ''}${recommended ? '<small class="recommend-badge">추천</small>' : ''}</button>`;
   }
   function itemPreview(item) {
     const box = { hair:'55 0 250 250', hat:'100 0 160 145', top:'95 155 170 120', dress:'55 190 250 220', skirt:'95 235 170 120', pants:'100 280 160 190', shoes:'110 405 150 75', headAccessory:'90 0 180 120', accessory:'105 100 150 175', bag:'60 145 110 190', toy:'200 275 100 125' }[item.category];
@@ -223,11 +223,15 @@
     const items = state.categoryId === 'background'
       ? data.backgrounds.map(bg => { const art = window.ASSETS.backgrounds[bg.id]; return `<button class="item-card ${state.backgroundId === bg.id ? 'chosen' : ''}" data-background="${bg.id}"><span class="item-picture scene-thumb ${art ? 'has-art' : ''}" style="--swatch:${bg.color}${art ? `;background-image:url('${esc(runtimeAsset(art))}')` : ''}">${art ? '' : bg.icon}</span><strong>${bg.nameKo}</strong>${state.backgroundId === bg.id ? '<i>✓</i>' : ''}</button>`; }).join('')
       : data.items.filter(item => item.category === state.categoryId).map(itemCard).join('');
-    return `<section class="editor-page">${header()}<main class="editor-stage">${stageArt()}<div class="stage-caption">${state.mode === 'story' ? esc(data.themes.find(theme => theme.id === state.themeId)?.title || '') : `${character().emoji} ${character().nameKo}`}</div></main><nav class="category-rail" aria-label="꾸미기 종류">${data.categories.map(category => `<button class="category-button ${state.categoryId === category.id ? 'active' : ''}" data-category="${category.id}"><span>${categoryIcon(category.id)}</span><small>${category.name}</small></button>`).join('')}<button class="category-button ${state.categoryId === 'background' ? 'active' : ''}" data-category="background"><span>${categoryIcon('background')}</span><small>배경</small></button></nav><div class="item-rail" aria-label="${currentCategory?.name || '배경'} 선택">${items}</div><footer class="editor-actions"><button class="action-button magic" data-action="random"><span>🪄</span><strong>마법 코디</strong></button><button class="action-button reset" data-action="reset"><span>🫧</span><strong>처음부터</strong></button><button class="action-button finish-button" data-action="finish"><span>✨</span><strong>완성!</strong></button></footer></section>`;
+    const theme = state.mode === 'story' ? data.themes.find(entry => entry.id === state.themeId) : null;
+    return `<section class="editor-page">${header()}<main class="editor-stage">${stageArt()}<div class="stage-caption">${theme ? esc(theme.promptKo || theme.title) : `${character().emoji} ${character().nameKo}`}</div></main><nav class="category-rail" aria-label="꾸미기 종류">${data.categories.map(category => `<button class="category-button ${state.categoryId === category.id ? 'active' : ''}" data-category="${category.id}"><span>${categoryIcon(category.id)}</span><small>${category.name}</small></button>`).join('')}<button class="category-button ${state.categoryId === 'background' ? 'active' : ''}" data-category="background"><span>${categoryIcon('background')}</span><small>배경</small></button></nav><div class="item-rail" aria-label="${currentCategory?.name || '배경'} 선택">${items}</div><footer class="editor-actions"><button class="action-button magic" data-action="random"><span>🪄</span><strong>마법 코디</strong></button><button class="action-button reset" data-action="reset"><span>🫧</span><strong>처음부터</strong></button><button class="action-button finish-button" data-action="finish"><span>✨</span><strong>완성!</strong></button></footer></section>`;
   }
 
   function renderFinish() {
-    return `<section class="finish-page"><header class="simple-header"><button class="round-button" data-action="home" aria-label="홈">⌂</button><h1>${phrases[state.completed % phrases.length]}</h1><button class="round-button" data-action="mute" aria-label="소리">${state.muted ? '🔇' : '🔊'}</button></header><main class="finish-stage">${stageArt()}<div class="finish-card"><strong>${character().nameKo}가 오늘 멋지게 꾸몄어요!</strong><span>${selectedItems().slice(0, 3).map(item => esc(item.nameKo)).join(' · ') || '새로운 모습'}</span></div></main><div class="finish-actions"><button class="big-button pink" data-action="photo"><span>📸</span><strong>사진첩에 저장</strong></button><button class="big-button yellow" data-action="again"><span>👗</span><strong>다시 꾸미기</strong></button><button class="big-button white" data-action="friends"><span>🐰</span><strong>다른 친구</strong></button></div></section>`;
+    const theme = state.mode === 'story' ? data.themes.find(entry => entry.id === state.themeId) : null;
+    const liked = theme && (theme.recommended || []).some(id => Object.values(state.outfit).includes(id));
+    const finishText = theme ? (liked ? `${theme.title.replace(/!$/, '')} 준비 완료!` : '멋진 코디를 완성했어요!') : `${character().nameKo}가 오늘 멋지게 꾸몄어요!`;
+    return `<section class="finish-page"><header class="simple-header"><button class="round-button" data-action="home" aria-label="홈">⌂</button><h1>${phrases[state.completed % phrases.length]}</h1><button class="round-button" data-action="mute" aria-label="소리">${state.muted ? '🔇' : '🔊'}</button></header><main class="finish-stage">${stageArt()}<div class="finish-card"><strong>${esc(finishText)}</strong><span>${selectedItems().slice(0, 3).map(item => esc(item.nameKo)).join(' · ') || '새로운 모습'}</span></div></main><div class="finish-actions"><button class="big-button pink" data-action="photo"><span>📸</span><strong>사진첩에 저장</strong></button><button class="big-button yellow" data-action="again"><span>👗</span><strong>다시 꾸미기</strong></button><button class="big-button white" data-action="friends"><span>🐰</span><strong>다른 친구</strong></button></div></section>`;
   }
 
   function renderAlbum() {
@@ -252,7 +256,8 @@
   function loadCharacter(id) {
     state.characterId = id;
     if (state.mode === 'story') state.backgroundId = data.themes.find(theme => theme.id === state.themeId)?.background || state.backgroundId;
-    state.view = 'editor'; state.history = []; state.categoryId = 'hair'; persist(); render(); play('tap'); startBgm();
+    const theme = state.mode === 'story' ? data.themes.find(entry => entry.id === state.themeId) : null;
+    state.view = 'editor'; state.history = []; state.categoryId = theme ? itemById[theme.outfit]?.category || 'dress' : 'hair'; persist(); render(); play('tap'); startBgm();
   }
   function finish() {
     state.completed += 1; state.view = 'finish'; state.sparkle = ''; persist(); render(); play('complete');
@@ -308,7 +313,7 @@
       const item = itemById[button.dataset.item];
       if (!item) return;
       if (!unlocked(item)) { notice(`꾸미기 ${item.lockedAt}번 하면 열려요!`); return; }
-      if (state.mode === 'story' && data.themes.find(theme => theme.id === state.themeId)?.outfit === item.id) notice('잘 어울려요!');
+      if (state.mode === 'story' && (data.themes.find(theme => theme.id === state.themeId)?.recommended || []).includes(item.id)) notice('잘 어울려요!');
       pushUndo();
       if (state.outfit[item.category] === item.id && item.category !== 'hair') delete state.outfit[item.category];
       else state.outfit[item.category] = item.id;

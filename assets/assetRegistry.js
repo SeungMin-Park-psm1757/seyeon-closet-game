@@ -10,6 +10,14 @@ window.ASSETS = {
     dress_02: 'assets/custom/clothes/dress_02.png',
     dress_03: 'assets/custom/clothes/dress_03.png',
     dress_04: 'assets/custom/clothes/dress_04.png',
+    dress_05: 'assets/custom/clothes/dress_05.png',
+    dress_06: 'assets/custom/clothes/dress_06.png',
+    dress_07: 'assets/custom/clothes/dress_07.png',
+    dress_08: 'assets/custom/clothes/dress_08.png',
+    dress_09: 'assets/custom/clothes/dress_09.png',
+    dress_10: 'assets/custom/clothes/dress_10.png',
+    dress_11: 'assets/custom/clothes/dress_11.png',
+    dress_12: 'assets/custom/clothes/dress_12.png',
     shoes_01: 'assets/custom/clothes/shoes_01.png'
   },
   backgrounds: {

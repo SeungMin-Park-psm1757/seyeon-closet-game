@@ -22,8 +22,7 @@
     tags: ['cute', `color-${i % colors.length}`],
     color: colors[i % colors.length],
     variant: i,
-    layer: category.layer,
-    lockedAt: category.id === 'dress' ? ({ 9: 3, 10: 5, 11: 10 }[i] || undefined) : undefined
+    layer: category.layer
   })));
 
   const characters = [

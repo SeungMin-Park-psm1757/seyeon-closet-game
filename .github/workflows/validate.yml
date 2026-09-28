@@ -5,6 +5,7 @@ on:
     branches:
       - codex/art-direction-v1
       - codex/art-direction-v2
+      - codex/art-direction-v3
       - feature/kids-dressup-game-v1
       - main
   pull_request:

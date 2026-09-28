@@ -23,6 +23,7 @@
       nameKo,
       asset,
       ...(asset ? { compatibleCharacters: ['girl01'] } : {}),
+      ...(category.id === 'hat' ? { hatFit: ['cap', 'sunhat', 'beanie', 'crown'][i % 4] } : {}),
       tags: ['cute', `color-${i % colors.length}`],
       color: colors[i % colors.length],
       variant: i,

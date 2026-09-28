@@ -97,10 +97,16 @@
         : `<path d="M130 305L230 305L221 432L187 432L178 351L166 432L132 432Z" fill="${c}" stroke="#805366" stroke-width="4" stroke-linejoin="round"/><path d="M135 320L225 320" stroke="#fff5e9" stroke-width="6"/>`;
       case 'shoes': return `<path d="M119 430Q144 439 165 430L170 453Q158 469 111 460Q101 450 119 430ZM194 430Q216 439 241 430L251 451Q251 468 203 461Q186 456 194 430Z" fill="${c}" stroke="#805366" stroke-width="4"/><path d="M114 453Q140 462 166 452M197 453Q225 462 248 452" stroke="#fff9ed" stroke-width="5" stroke-linecap="round"/>`;
       case 'hat': {
-        const art = v % 4 === 3
-          ? `<path d="M136 90L145 57L166 72L180 43L196 72L218 57L225 92Z" fill="${c}" stroke="#805366" stroke-width="4"/><path d="M127 94Q180 78 233 94L226 109Q180 119 134 108Z" fill="#fff1c5" stroke="#805366" stroke-width="4"/>`
-          : `<path d="M143 97Q143 57 180 56Q217 57 217 97Z" fill="${c}" stroke="#805366" stroke-width="4"/><path d="M123 99Q180 83 237 99Q230 114 180 113Q130 114 123 99Z" fill="#fff1c5" stroke="#805366" stroke-width="4"/><text x="180" y="96" text-anchor="middle" font-size="19">${detail}</text>`;
-        return person?.id === 'girl01' ? `<g transform="translate(0 -32)">${art}</g>` : art;
+        const shape = item.hatFit || ['cap', 'sunhat', 'beanie', 'crown'][v % 4];
+        const art = shape === 'crown'
+          ? `<path d="M132 91L140 55L163 71L180 40L197 71L220 55L228 91Z" fill="${c}" stroke="#805366" stroke-width="4"/><path d="M126 93Q180 79 234 93L229 109Q180 119 131 109Z" fill="#fff1c5" stroke="#805366" stroke-width="4"/>`
+          : shape === 'sunhat'
+            ? `<path d="M145 88Q145 49 180 48Q215 49 215 88Z" fill="${c}" stroke="#805366" stroke-width="4"/><path d="M108 91Q180 75 252 91Q244 108 180 109Q116 108 108 91Z" fill="#fff1c5" stroke="#805366" stroke-width="4"/><path d="M124 91Q180 80 236 91" fill="none" stroke="#805366" stroke-width="3"/><text x="180" y="86" text-anchor="middle" font-size="19">${detail}</text>`
+            : shape === 'beanie'
+              ? `<path d="M132 92Q132 47 180 44Q228 47 228 92Z" fill="${c}" stroke="#805366" stroke-width="4"/><path d="M128 88Q180 80 232 88L229 105Q180 115 131 105Z" fill="#fff1c5" stroke="#805366" stroke-width="4"/><text x="180" y="85" text-anchor="middle" font-size="19">${detail}</text>`
+              : `<path d="M139 92Q139 48 180 47Q221 48 221 92Z" fill="${c}" stroke="#805366" stroke-width="4"/><path d="M116 94Q180 78 244 94Q236 110 180 111Q124 110 116 94Z" fill="#fff1c5" stroke="#805366" stroke-width="4"/><text x="180" y="89" text-anchor="middle" font-size="19">${detail}</text>`;
+        const fittedArt = person?.id === 'girl01' ? `<g transform="translate(180 84) scale(${shape === 'sunhat' ? 1.08 : shape === 'crown' ? 1.12 : 1.15}) translate(-180 -84) translate(0 -30)">${art}</g>` : art;
+        return fittedArt;
       }
       case 'headAccessory': return `<path d="M153 77Q139 50 166 53L180 69L194 53Q221 50 207 77L180 91Z" fill="${c}" stroke="#805366" stroke-width="4"/><circle cx="180" cy="76" r="7" fill="#ffe99a"/>`;
       case 'accessory': return v === 4 || v === 5 || v === 6

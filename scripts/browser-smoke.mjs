@@ -141,6 +141,42 @@ try {
   results.push('412x915 no page overflow PASS');
   await contextWide.close();
 
+
+  // Story mode: all five themes must open with custom backgrounds and recommendation UI.
+  const storyThemes = [
+    ['picnic', 'dress'],
+    ['princess', 'dress'],
+    ['rainy', 'pants'],
+    ['birthday', 'dress'],
+    ['beach', 'dress']
+  ];
+  for (const [themeId, expectedCategory] of storyThemes) {
+    await page.goto(baseURL, { waitUntil: 'networkidle' });
+    await page.locator('[data-action="stories"]').click();
+    await page.locator(`[data-theme="${themeId}"]`).click();
+    await page.locator('[data-character="girl01"]').click();
+    await page.waitForSelector('.editor-page');
+    const activeCategory = await page.locator('.category-button.active').getAttribute('data-category');
+    assert(activeCategory === expectedCategory, `${themeId} should open ${expectedCategory}, got ${activeCategory}`);
+    const bgImage = await page.locator('.stage-scene.has-art').evaluate(el => getComputedStyle(el).backgroundImage);
+    assert(bgImage && bgImage !== 'none', `${themeId} must use custom background art`);
+    assert(await page.locator('.item-card.recommended').count() > 0, `${themeId} must show recommended items`);
+  }
+  results.push('5/5 story themes browser flow PASS');
+
+  // Photo album save/restore rendering.
+  await page.goto(baseURL, { waitUntil: 'networkidle' });
+  await page.locator('[data-action="characters"]').click();
+  await page.locator('[data-character="girl01"]').click();
+  await page.locator('[data-category="dress"]').click();
+  await page.locator('[data-item="dress_06"]').click();
+  await page.locator('[data-action="finish"]').click();
+  await page.locator('[data-action="photo"]').click();
+  await page.waitForSelector('.album-page');
+  assert(await page.locator('.photo-card').count() > 0, 'saved outfit must appear in album');
+  assert(await page.locator('.photo-art svg').count() > 0, 'album photo must render SVG art');
+  results.push('album save/render PASS');
+
   await fs.writeFile(`${outDir}/results.txt`, results.join('\n') + '\n', 'utf8');
   console.log(results.join('\n'));
 } finally {

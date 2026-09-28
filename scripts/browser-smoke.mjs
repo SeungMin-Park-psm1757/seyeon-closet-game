@@ -59,11 +59,17 @@ try {
   await page.locator('[data-action="reset"]').click();
 
   // Outfit state invariants in the actual browser UI.
+  let value;
+  await page.locator('[data-category="dress"]').click();
+  await page.locator('[data-item="dress_05"]').click();
+  await page.locator('[data-action="undo"]').click();
+  value = await outfit(page);
+  assert(!value.dress && value.shoes === 'shoes_01', 'undo must restore the previous outfit');
   await page.locator('[data-category="dress"]').click();
   await page.locator('[data-item="dress_05"]').click();
   await page.locator('[data-category="top"]').click();
   await page.locator('[data-item="top_01"]').click();
-  let value = await outfit(page);
+  value = await outfit(page);
   assert(!value.dress && value.top === 'top_01', 'top must remove dress');
 
   await page.locator('[data-category="skirt"]').click();
@@ -77,6 +83,14 @@ try {
   await page.locator('[data-item="dress_05"]').click();
   value = await outfit(page);
   assert(value.dress === 'dress_05' && !value.top && !value.skirt && !value.pants, 'dress must remove top and bottoms');
+  await page.locator('[data-action="reset"]').click();
+  value = await outfit(page);
+  assert(value.hair === 'hair_01' && value.shoes === 'shoes_01' && !value.dress && !value.top && !value.skirt && !value.pants, 'reset must restore the default outfit');
+  await page.locator('[data-action="random"]').click();
+  value = await outfit(page);
+  assert(value.hair && value.shoes && !(value.dress && (value.top || value.skirt || value.pants)), 'free-mode magic outfit must produce a valid outfit');
+  await page.locator('[data-action="reset"]').click();
+  results.push('free-mode undo, reset, and magic outfit PASS');
 
   // Scroll position must survive item selection and delayed sparkle re-render.
   await page.locator('[data-category="dress"]').click();

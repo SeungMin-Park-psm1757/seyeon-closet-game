@@ -8,7 +8,7 @@
 
 런타임 아트 재생성: `python scripts/convert-assets.py` (Pillow WebP 지원 필요; 기존 런타임 파일을 PNG 원본에서 다시 생성합니다).
 
-검증: `node check-data.js`, `node audit-assets.js`.
+검증: `node check-data.js`, `node audit-assets.js`, `node scripts/audit-story-mode.js`, `python scripts/verify-runtime-assets.py`. 이야기 모드 전체 custom-art 완성 여부는 `node scripts/audit-story-mode.js --strict`로 확인합니다.
 
 ## 자산 교체
 

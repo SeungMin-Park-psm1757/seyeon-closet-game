@@ -37,6 +37,29 @@
   function runtimeAsset(path) {
     return path.replace(/^assets\/custom\/(.+)\.png$/i, 'assets/runtime/$1.webp');
   }
+  function categoryIcon(id) {
+    const paths = {
+      hair:'<path d="M6 20c-3-8 1-15 9-15s12 7 9 15m-18 0 4-3m14 3-4-3M9 12c2 2 8 2 10 0"/>',
+      hat:'<path d="M5 17c1-7 4-11 7-11s6 4 7 11M3 18h18M7 20h10"/>',
+      top:'<path d="m8 6 4-2 4 2 5 5-3 3-2-2v8H8v-8l-2 2-3-3z"/>',
+      dress:'<path d="m8 5 4-2 4 2 3 4-3 2 4 9H4l4-9-3-2z"/>',
+      skirt:'<path d="M7 7c3 2 7 2 10 0l4 12H3zM7 11l2 7m3-6v6m3-7 2 7"/>',
+      pants:'<path d="M6 5h12l-1 15h-4l-1-8-1 8H7z"/>',
+      shoes:'<path d="M4 14c3 0 5-3 6-6l3 6 6 2c2 1 2 4 0 4H5c-2 0-3-4-1-6z"/>',
+      headAccessory:'<path d="M4 16c2-7 5-10 8-10s6 3 8 10M12 8 9 5l-4 1 1 5m6-3 3-3 4 1-1 5"/>',
+      bag:'<path d="M6 9h12l1 12H5zm3 0c0-5 6-5 6 0"/>',
+      accessory:'<path d="M5 6c2-3 5-1 7 2 2-3 5-5 7-2 4 5-7 13-7 13S1 11 5 6z"/>',
+      toy:'<circle cx="12" cy="13" r="7"/><circle cx="7" cy="6" r="3"/><circle cx="17" cy="6" r="3"/><path d="M9 13h.1m5.8 0h.1m-5 3q2 2 4 0"/>',
+      background:'<path d="M3 19 9 9l4 6 3-4 5 8z"/><circle cx="17" cy="6" r="2.5" fill="currentColor" stroke="none"/>'
+    }[id] || '<circle cx="12" cy="12" r="8"/>';
+    return `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${paths}</svg>`;
+  }
+  function characterPortrait(person) {
+    const custom = window.ASSETS.characters[person.id];
+    return custom
+      ? `<span class="character-portrait">${avatarSvg({ characterId: person.id, outfit: { hair: 'hair_03', dress: 'dress_01', shoes: 'shoes_01' } })}</span>`
+      : `<span class="character-face">${person.emoji}</span>`;
+  }
 
   function svgItem(item, part = '') {
     if (!item) return '';
@@ -161,7 +184,16 @@
 
   function renderHome() {
     const last = Object.keys(read().outfit || {}).length;
-    return `<section class="home-page"><div class="home-sun">☀️</div><div class="home-doodle">🌼　🦋　🌼</div><div class="home-title"><div class="logo-doll">${avatarSvg()}</div><h1>세연이의<br>옷장</h1><p>예쁜 옷을 골라 입혀 주세요!</p></div><div class="home-buttons"><button class="big-button pink" data-action="characters"><span>👗</span><strong>옷 입히기</strong></button><button class="big-button yellow" data-action="stories"><span>📖</span><strong>이야기 꾸미기</strong></button><button class="big-button white" data-action="album"><span>📸</span><strong>나의 사진첩</strong><i>${state.album.length}</i></button></div><div class="home-bottom"><span>🧸</span><span>🌷</span><span>🐰</span></div><button class="sound-button home-sound" data-action="mute" aria-label="소리 ${state.muted ? '켜기' : '끄기'}">${state.muted ? '🔇' : '🔊'}</button>${last ? `<button class="continue-button" data-action="continue">계속 꾸미기</button>` : ''}</section>`;
+    return `<section class="home-page"><div class="home-title"><div class="logo-doll">${avatarSvg()}</div><h1>세연이의<br>옷장</h1><p>예쁜 옷을 골라 입혀 주세요!</p></div><div class="home-buttons"><button class="big-button pink" data-action="characters"><span class="home-icon">${homeIcon('dress')}</span><strong>옷 입히기</strong></button><button class="big-button yellow" data-action="stories"><span class="home-icon">${homeIcon('story')}</span><strong>이야기 꾸미기</strong></button><button class="big-button white" data-action="album"><span class="home-icon">${homeIcon('album')}</span><strong>나의 사진첩</strong><i>${state.album.length}</i></button></div><button class="sound-button home-sound" data-action="mute" aria-label="소리 ${state.muted ? '켜기' : '끄기'}">${state.muted ? '🔇' : '🔊'}</button>${last ? `<button class="continue-button" data-action="continue">계속 꾸미기</button>` : ''}</section>`;
+  }
+
+  function homeIcon(type) {
+    const art = {
+      dress:'<path d="M19 5 15 3l-3 3-3-3-4 2 2 5-3 11h16l-3-11z"/><path d="m9 7 3 2 3-2"/>',
+      story:'<path d="M4 5c4-1 7 0 8 2v14c-1-2-4-3-8-2zm16 0c-4-1-7 0-8 2v14c1-2 4-3 8-2z"/><path d="M7 9h2m6 0h2"/>' ,
+      album:'<rect x="3" y="5" width="18" height="15" rx="3"/><circle cx="9" cy="10" r="2"/><path d="m5 18 5-5 3 3 3-4 4 6"/>'
+    }[type];
+    return `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${art}</svg>`;
   }
 
   function renderThemes() {
@@ -169,7 +201,7 @@
   }
 
   function renderCharacters() {
-    return `<section class="selection-page"><header class="simple-header"><button class="round-button" data-action="back" aria-label="뒤로">↶</button><h1>친구를 골라요</h1><button class="round-button" data-action="home" aria-label="홈">⌂</button></header><div class="character-grid">${data.characters.map(person => `<button class="character-card" data-character="${person.id}"><span class="character-face">${person.emoji}</span><strong>${person.nameKo}</strong></button>`).join('')}</div><button class="bottom-back" data-action="back">뒤로 가기</button></section>`;
+    return `<section class="selection-page"><header class="simple-header"><button class="round-button" data-action="back" aria-label="뒤로">↶</button><h1>친구를 골라요</h1><button class="round-button" data-action="home" aria-label="홈">⌂</button></header><div class="character-grid">${data.characters.map(person => `<button class="character-card" data-character="${person.id}">${characterPortrait(person)}<strong>${person.nameKo}</strong></button>`).join('')}</div><button class="bottom-back" data-action="back">뒤로 가기</button></section>`;
   }
 
   function header() {
@@ -182,16 +214,16 @@
     return `<button class="item-card ${chosen ? 'chosen' : ''} ${recommended ? 'recommended' : ''} ${locked ? 'locked' : ''}" data-item="${item.id}" ${locked ? `aria-label="꾸미기 ${item.lockedAt}번 하면 열려요"` : ''}><span class="item-picture" style="--swatch:${item.color}">${itemPreview(item)}</span><strong>${locked ? '🔒' : esc(item.nameKo)}</strong>${chosen || recommended ? `<i>${chosen ? '✓' : '⭐'}</i>` : ''}</button>`;
   }
   function itemPreview(item) {
-    const box = { hair:'55 0 250 250', hat:'100 0 160 145', top:'90 195 180 170', dress:'55 190 250 220', skirt:'80 285 200 135', pants:'100 280 160 190', shoes:'95 400 180 80', headAccessory:'120 20 120 100', bag:'195 235 125 140', accessory:'105 100 150 175', toy:'75 235 120 130' }[item.category];
+    const box = { hair:'55 0 250 250', hat:'100 0 160 145', top:'95 155 170 120', dress:'55 190 250 220', skirt:'95 235 170 120', pants:'100 280 160 190', shoes:'110 405 150 75', headAccessory:'90 0 180 120', accessory:'105 100 150 175', bag:'60 145 110 190', toy:'200 275 100 125' }[item.category];
     const back = item.category === 'hair' ? svgItem(item, 'back') : '';
     return `<svg viewBox="${box}" aria-hidden="true">${back}${svgItem(item)}</svg>`;
   }
   function renderEditor() {
     const currentCategory = data.categories.find(category => category.id === state.categoryId);
     const items = state.categoryId === 'background'
-      ? data.backgrounds.map(bg => `<button class="item-card ${state.backgroundId === bg.id ? 'chosen' : ''}" data-background="${bg.id}"><span class="item-picture scene-thumb" style="--swatch:${bg.color}">${bg.icon}</span><strong>${bg.nameKo}</strong>${state.backgroundId === bg.id ? '<i>✓</i>' : ''}</button>`).join('')
+      ? data.backgrounds.map(bg => { const art = window.ASSETS.backgrounds[bg.id]; return `<button class="item-card ${state.backgroundId === bg.id ? 'chosen' : ''}" data-background="${bg.id}"><span class="item-picture scene-thumb ${art ? 'has-art' : ''}" style="--swatch:${bg.color}${art ? `;background-image:url('${esc(runtimeAsset(art))}')` : ''}">${art ? '' : bg.icon}</span><strong>${bg.nameKo}</strong>${state.backgroundId === bg.id ? '<i>✓</i>' : ''}</button>`; }).join('')
       : data.items.filter(item => item.category === state.categoryId).map(itemCard).join('');
-    return `<section class="editor-page">${header()}<main class="editor-stage">${stageArt()}<div class="stage-caption">${state.mode === 'story' ? esc(data.themes.find(theme => theme.id === state.themeId)?.title || '') : `${character().emoji} ${character().nameKo}`}</div></main><nav class="category-rail" aria-label="꾸미기 종류">${data.categories.map(category => `<button class="category-button ${state.categoryId === category.id ? 'active' : ''}" data-category="${category.id}"><span>${category.icon}</span><small>${category.name}</small></button>`).join('')}<button class="category-button ${state.categoryId === 'background' ? 'active' : ''}" data-category="background"><span>🏞️</span><small>배경</small></button></nav><div class="item-rail" aria-label="${currentCategory?.name || '배경'} 선택">${items}</div><footer class="editor-actions"><button class="action-button magic" data-action="random"><span>🪄</span><strong>마법 코디</strong></button><button class="action-button reset" data-action="reset"><span>🫧</span><strong>처음부터</strong></button><button class="action-button finish-button" data-action="finish"><span>✨</span><strong>완성!</strong></button></footer></section>`;
+    return `<section class="editor-page">${header()}<main class="editor-stage">${stageArt()}<div class="stage-caption">${state.mode === 'story' ? esc(data.themes.find(theme => theme.id === state.themeId)?.title || '') : `${character().emoji} ${character().nameKo}`}</div></main><nav class="category-rail" aria-label="꾸미기 종류">${data.categories.map(category => `<button class="category-button ${state.categoryId === category.id ? 'active' : ''}" data-category="${category.id}"><span>${categoryIcon(category.id)}</span><small>${category.name}</small></button>`).join('')}<button class="category-button ${state.categoryId === 'background' ? 'active' : ''}" data-category="background"><span>${categoryIcon('background')}</span><small>배경</small></button></nav><div class="item-rail" aria-label="${currentCategory?.name || '배경'} 선택">${items}</div><footer class="editor-actions"><button class="action-button magic" data-action="random"><span>🪄</span><strong>마법 코디</strong></button><button class="action-button reset" data-action="reset"><span>🫧</span><strong>처음부터</strong></button><button class="action-button finish-button" data-action="finish"><span>✨</span><strong>완성!</strong></button></footer></section>`;
   }
 
   function renderFinish() {

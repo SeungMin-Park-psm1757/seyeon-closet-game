@@ -1,6 +1,6 @@
 # Art Asset Specification
 
-This document is the current source-of-truth for custom art on `codex/art-direction-v2`.
+This document is the current source-of-truth for custom art on `codex/art-direction-v3`.
 
 ## 1. Wearable master canvas
 
@@ -12,7 +12,7 @@ This document is the current source-of-truth for custom art on `codex/art-direct
 - Do not crop each item to its visible pixels. Empty transparent margins are part of the alignment contract.
 - Do not move the shoulder, waist, hand, or foot anchors independently between files.
 
-The repository audit has verified that the current `girl01`, `hair_01`, `dress_01`–`dress_12`, and `shoes_01` files all use 1086 × 1448 and contain alpha transparency.
+The repository audit has verified that all 33 custom character/item wearable files use 1086 × 1448 and contain alpha transparency. This includes `girl01`, `hair_01`–`hair_04`, `dress_01`–`dress_12`, `top_01`–`top_03`, `skirt_01`–`skirt_03`, `shoes_01`–`shoes_04`, three head accessories, two bags, and two props.
 
 ## 2. Background art
 
@@ -67,7 +67,7 @@ GitHub Actions runs the same checks on the active development branches.
 
 ## 6. Performance policy
 
-Current custom art is **14.72 MiB across 19 PNG masters** and **10.61 MiB across 19 lossless WebP runtime files** (27.9% smaller, with pixel-exact RGBA round-trips). Keep PNG masters as editable source.
+Current custom art is **18.99 MiB across 39 registered PNG masters** and **13.56 MiB across 39 lossless WebP runtime files** (28.6% smaller, with pixel-exact RGBA round-trips). The set contains 33 character/item wearable files, one custom character, and five custom backgrounds. Keep PNG masters as editable source.
 
 The current pipeline:
 
@@ -88,4 +88,4 @@ Do not mass-produce all 104 item arts yet. First complete one polished vertical 
 - prop;
 - additional backgrounds beyond the completed room, garden, castle, and beach scenes.
 
-After the 3:4 runtime normalization and mobile visual QA are accepted, expand the catalog.
+The V3 vertical slice now covers multiple hairstyles, dresses, tops and skirts, shoes, head accessories, bags, props, and birthday scenery. After the 3:4 runtime normalization and mobile visual QA are accepted, expand the catalog.

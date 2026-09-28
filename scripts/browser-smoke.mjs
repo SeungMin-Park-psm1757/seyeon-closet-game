@@ -188,6 +188,21 @@ try {
   results.push('412x915 no page overflow PASS');
   await contextWide.close();
 
+  // The installed service worker must reopen the game when the network is unavailable.
+  const offlineContext = await browser.newContext({ serviceWorkers: 'allow' });
+  const offlinePage = await offlineContext.newPage();
+  await offlinePage.goto(baseURL, { waitUntil: 'networkidle' });
+  await offlinePage.evaluate(() => navigator.serviceWorker.ready);
+  await offlinePage.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
+  await offlineContext.setOffline(true);
+  await offlinePage.reload({ waitUntil: 'domcontentloaded' });
+  await offlinePage.waitForSelector('.home-page');
+  await offlinePage.locator('[data-action="characters"]').click();
+  await offlinePage.locator('[data-character="girl01"]').click();
+  assert(await offlinePage.locator('.editor-page').isVisible(), 'game editor must open from the offline cache');
+  results.push('PWA service-worker offline reopen PASS');
+  await offlineContext.close();
+
   // Custom Se-yeon art must be filtered from other characters across restore, UI, random, story, and album paths.
   const compatibilityProbe = await browser.newPage();
   await compatibilityProbe.goto(baseURL, { waitUntil: 'networkidle' });

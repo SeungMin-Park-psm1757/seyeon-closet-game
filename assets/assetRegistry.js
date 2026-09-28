@@ -8,6 +8,8 @@ window.ASSETS = {
     hair_01: 'assets/custom/clothes/hair_01.png',
     dress_01: 'assets/custom/clothes/dress_01.png',
     dress_02: 'assets/custom/clothes/dress_02.png',
+    dress_03: 'assets/custom/clothes/dress_03.png',
+    dress_04: 'assets/custom/clothes/dress_04.png',
     shoes_01: 'assets/custom/clothes/shoes_01.png'
   },
   backgrounds: {

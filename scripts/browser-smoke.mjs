@@ -36,6 +36,28 @@ try {
   await openEditor(page);
   assert(await page.locator('.editor-page').isVisible(), 'editor must open');
 
+  // Custom art shares one full-canvas coordinate system; hats stay above hair and clothing.
+  for (const [category, id] of [['hair','hair_02'],['top','top_02'],['pants','pants_02'],['shoes','shoes_04'],['hat','hat_01']]) {
+    await page.locator(`[data-category="${category}"]`).click();
+    await page.locator(`[data-item="${id}"]`).click();
+  }
+  const fit = await page.evaluate(() => {
+    const svg = document.querySelector('.doll-wrap svg');
+    const layers = [...svg.querySelectorAll(':scope > g[data-layer]')].map(layer => layer.dataset.layer);
+    const images = [...svg.querySelectorAll('image')].map(image => ({
+      x: image.getAttribute('x'), y: image.getAttribute('y'),
+      width: image.getAttribute('width'), height: image.getAttribute('height'),
+      preserve: image.getAttribute('preserveAspectRatio')
+    }));
+    const hatFits = [...new Set(window.GAME_DATA.items.filter(item => item.category === 'hat').map(item => item.hatFit))];
+    return { layers, images, hatFits };
+  });
+  assert(fit.images.length === 5 && fit.images.every(image => image.x === '0' && image.y === '0' && image.width === '360' && image.height === '480' && image.preserve === 'xMidYMid meet'), 'body and selected wearables must preserve the shared 360x480 canvas');
+  assert(fit.layers.indexOf('body') < fit.layers.indexOf('pants') && fit.layers.indexOf('pants') < fit.layers.indexOf('top') && fit.layers.indexOf('shoes') < fit.layers.indexOf('hair') && fit.layers.indexOf('hair') < fit.layers.indexOf('hat'), `wearable layer order must keep clothing below hair and hat (${fit.layers.join(' > ')})`);
+  assert(fit.hatFits.includes('cap') && fit.hatFits.includes('sunhat') && fit.hatFits.includes('beanie') && fit.hatFits.includes('crown'), `hats must use four explicit fits (${fit.hatFits.join(', ')})`);
+  results.push('shared art canvas, garment alignment, four hat fits, and hair/hat layer order PASS');
+  await page.locator('[data-action="reset"]').click();
+
   // Outfit state invariants in the actual browser UI.
   await page.locator('[data-category="dress"]').click();
   await page.locator('[data-item="dress_05"]').click();

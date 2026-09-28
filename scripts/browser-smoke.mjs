@@ -59,9 +59,13 @@ try {
   // Scroll position must survive item selection and delayed sparkle re-render.
   await page.locator('[data-category="dress"]').click();
   const before = await page.locator('.item-rail').evaluate(el => {
+    const previousBehavior = el.style.scrollBehavior;
+    el.style.scrollBehavior = 'auto';
     el.scrollLeft = Math.min(190, Math.max(0, el.scrollWidth - el.clientWidth));
+    const value = el.scrollLeft;
     el.dispatchEvent(new Event('scroll'));
-    return el.scrollLeft;
+    el.style.scrollBehavior = previousBehavior;
+    return value;
   });
   await page.waitForTimeout(80);
   await page.locator('[data-item="dress_08"]').evaluate(el => el.click());
@@ -71,9 +75,13 @@ try {
 
   // Category rail position must survive category change.
   const catBefore = await page.locator('.category-rail').evaluate(el => {
+    const previousBehavior = el.style.scrollBehavior;
+    el.style.scrollBehavior = 'auto';
     el.scrollLeft = Math.max(0, el.scrollWidth - el.clientWidth);
+    const value = el.scrollLeft;
     el.dispatchEvent(new Event('scroll'));
-    return el.scrollLeft;
+    el.style.scrollBehavior = previousBehavior;
+    return value;
   });
   await page.waitForTimeout(80);
   await page.locator('[data-category="toy"]').evaluate(el => el.click());

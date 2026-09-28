@@ -1,0 +1,22 @@
+name: Validate game data and art
+
+on:
+  push:
+    branches:
+      - codex/art-direction-v1
+      - feature/kids-dressup-game-v1
+      - main
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate game data
+        run: node check-data.js
+      - name: Audit registered PNG art
+        run: node audit-assets.js

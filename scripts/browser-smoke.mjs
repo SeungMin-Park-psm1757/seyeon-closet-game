@@ -58,32 +58,43 @@ try {
 
   // Scroll position must survive item selection and delayed sparkle re-render.
   await page.locator('[data-category="dress"]').click();
+  await page.waitForFunction(() => {
+    const el = document.querySelector('.item-rail');
+    return el && el.scrollWidth > el.clientWidth + 50;
+  });
   const before = await page.locator('.item-rail').evaluate(el => {
     const previousBehavior = el.style.scrollBehavior;
     el.style.scrollBehavior = 'auto';
-    el.scrollLeft = Math.min(190, Math.max(0, el.scrollWidth - el.clientWidth));
-    const value = el.scrollLeft;
+    const target = Math.min(190, Math.max(0, el.scrollWidth - el.clientWidth));
+    el.scrollLeft = target;
     el.dispatchEvent(new Event('scroll'));
+    const value = el.scrollLeft;
     el.style.scrollBehavior = previousBehavior;
     return value;
   });
-  await page.waitForTimeout(80);
+  assert(before > 40, `item rail must have meaningful overflow for persistence test (before=${before})`);
+  await page.waitForTimeout(100);
   await page.locator('[data-item="dress_08"]').evaluate(el => el.click());
   await page.waitForTimeout(950);
   const after = await page.locator('.item-rail').evaluate(el => el.scrollLeft);
   assert(Math.abs(after - before) <= 8, `item rail scroll must persist (before=${before}, after=${after})`);
 
   // Category rail position must survive category change.
+  await page.waitForFunction(() => {
+    const el = document.querySelector('.category-rail');
+    return el && el.scrollWidth > el.clientWidth + 50;
+  });
   const catBefore = await page.locator('.category-rail').evaluate(el => {
     const previousBehavior = el.style.scrollBehavior;
     el.style.scrollBehavior = 'auto';
     el.scrollLeft = Math.max(0, el.scrollWidth - el.clientWidth);
-    const value = el.scrollLeft;
     el.dispatchEvent(new Event('scroll'));
+    const value = el.scrollLeft;
     el.style.scrollBehavior = previousBehavior;
     return value;
   });
-  await page.waitForTimeout(80);
+  assert(catBefore > 40, `category rail must have meaningful overflow (before=${catBefore})`);
+  await page.waitForTimeout(100);
   await page.locator('[data-category="toy"]').evaluate(el => el.click());
   await page.waitForTimeout(120);
   const catAfter = await page.locator('.category-rail').evaluate(el => el.scrollLeft);
@@ -143,6 +154,8 @@ try {
 
 
   // Story mode: all five themes must open with custom backgrounds and recommendation UI.
+  const storyContext = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
+  const storyPage = await storyContext.newPage();
   const storyThemes = [
     ['picnic', 'dress'],
     ['princess', 'dress'],
@@ -151,31 +164,32 @@ try {
     ['beach', 'dress']
   ];
   for (const [themeId, expectedCategory] of storyThemes) {
-    await page.goto(baseURL, { waitUntil: 'networkidle' });
-    await page.locator('[data-action="stories"]').click();
-    await page.locator(`[data-theme="${themeId}"]`).click();
-    await page.locator('[data-character="girl01"]').click();
-    await page.waitForSelector('.editor-page');
-    const activeCategory = await page.locator('.category-button.active').getAttribute('data-category');
+    await storyPage.goto(baseURL, { waitUntil: 'networkidle' });
+    await storyPage.locator('[data-action="stories"]').click();
+    await storyPage.locator(`[data-theme="${themeId}"]`).click();
+    await storyPage.locator('[data-character="girl01"]').click();
+    await storyPage.waitForSelector('.editor-page');
+    const activeCategory = await storyPage.locator('.category-button.active').getAttribute('data-category');
     assert(activeCategory === expectedCategory, `${themeId} should open ${expectedCategory}, got ${activeCategory}`);
-    const bgImage = await page.locator('.stage-scene.has-art').evaluate(el => getComputedStyle(el).backgroundImage);
+    const bgImage = await storyPage.locator('.stage-scene.has-art').evaluate(el => getComputedStyle(el).backgroundImage);
     assert(bgImage && bgImage !== 'none', `${themeId} must use custom background art`);
-    assert(await page.locator('.item-card.recommended').count() > 0, `${themeId} must show recommended items`);
+    assert(await storyPage.locator('.item-card.recommended').count() > 0, `${themeId} must show recommended items`);
   }
   results.push('5/5 story themes browser flow PASS');
 
   // Photo album save/restore rendering.
-  await page.goto(baseURL, { waitUntil: 'networkidle' });
-  await page.locator('[data-action="characters"]').click();
-  await page.locator('[data-character="girl01"]').click();
-  await page.locator('[data-category="dress"]').click();
-  await page.locator('[data-item="dress_06"]').click();
-  await page.locator('[data-action="finish"]').click();
-  await page.locator('[data-action="photo"]').click();
-  await page.waitForSelector('.album-page');
-  assert(await page.locator('.photo-card').count() > 0, 'saved outfit must appear in album');
-  assert(await page.locator('.photo-art svg').count() > 0, 'album photo must render SVG art');
+  await storyPage.goto(baseURL, { waitUntil: 'networkidle' });
+  await storyPage.locator('[data-action="characters"]').click();
+  await storyPage.locator('[data-character="girl01"]').click();
+  await storyPage.locator('[data-category="dress"]').click();
+  await storyPage.locator('[data-item="dress_06"]').click();
+  await storyPage.locator('[data-action="finish"]').click();
+  await storyPage.locator('[data-action="photo"]').click();
+  await storyPage.waitForSelector('.album-page');
+  assert(await storyPage.locator('.photo-card').count() > 0, 'saved outfit must appear in album');
+  assert(await storyPage.locator('.photo-art svg').count() > 0, 'album photo must render SVG art');
   results.push('album save/render PASS');
+  await storyContext.close();
 
   await fs.writeFile(`${outDir}/results.txt`, results.join('\n') + '\n', 'utf8');
   console.log(results.join('\n'));

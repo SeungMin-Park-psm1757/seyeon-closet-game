@@ -83,7 +83,7 @@ button:focus-visible { outline: 4px solid #56aeb0; outline-offset: 2px; }
 .rail-arrow { display: grid; place-items: center; width: 48px; height: 48px; padding: 0; border: 0; border-radius: 16px; background: #fff8ee; box-shadow: 0 3px 0 #e6ceb8; color: #805d55; font-size: 34px; font-weight: 900; line-height: 1; }
 .rail-arrow:disabled { opacity: .28; box-shadow: none; cursor: default; }
 .rail-arrow:not(:disabled):active { transform: translateY(2px) scale(.97); }
-.category-rail { display: flex; gap: 7px; overflow-x: auto; align-items: center; min-width: 0; padding: 5px 1px; overscroll-behavior-x: contain; scrollbar-width: none; scroll-behavior: smooth; }
+.category-rail { display: flex; gap: 7px; overflow-x: auto; align-items: center; min-width: 0; padding: 4px 1px; overscroll-behavior-x: contain; scrollbar-width: none; scroll-behavior: smooth; }
 .category-rail::-webkit-scrollbar, .item-rail::-webkit-scrollbar, .album-grid::-webkit-scrollbar { display: none; }
 .category-button { flex: 0 0 70px; display: grid; place-items: center; gap: 1px; height: 66px; border: 2px solid transparent; border-radius: 19px; background: #fffaf3; box-shadow: 0 3px 0 #e8d2bd; }
 .category-button span { display: grid; place-items: center; width: 29px; height: 29px; color: #78534d; line-height: 1; }

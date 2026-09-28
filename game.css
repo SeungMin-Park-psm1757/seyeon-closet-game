@@ -102,6 +102,7 @@ button:focus-visible { outline: 4px solid #56aeb0; outline-offset: 2px; }
 .finish-page { display: flex; flex-direction: column; padding: max(6px, env(safe-area-inset-top)) 13px max(10px, env(safe-area-inset-bottom)); background: #fff1df; }
 .finish-page .simple-header { flex: 0 0 70px; }
 .finish-stage { position: relative; flex: 1 1 auto; min-height: 0; overflow: hidden; border: 3px solid #fff; border-radius: 28px; box-shadow: 0 4px 0 #e7cebb; }
+.finish-stage .doll-wrap { bottom: 25%; }
 .finish-stage .doll-wrap svg { width: min(94%, 360px); }
 .celebrate { animation: dance .9s ease-in-out infinite; transform-origin: 50% 75%; }
 .finish-card { position: absolute; z-index: 4; right: 10px; bottom: 10px; left: 10px; display: grid; gap: 4px; padding: 11px; border-radius: 18px; background: #fffaf0eF; text-align: center; }
@@ -116,7 +117,8 @@ button:focus-visible { outline: 4px solid #56aeb0; outline-offset: 2px; }
 .album-page { padding-right: 13px; padding-left: 13px; }
 .album-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; overflow: auto; align-content: start; padding: 4px 2px 14px; overscroll-behavior: contain; }
 .photo-card { display: grid; align-content: start; gap: 4px; min-width: 0; padding: 8px; border: 2px solid #f0d8c0; border-radius: 21px; background: #fffaf3; box-shadow: 0 3px 0 #ead1ba; }
-.photo-card img { width: 100%; height: clamp(130px, 23vh, 190px); border-radius: 15px; background: #ffe8d1; object-fit: contain; }
+.photo-art { height: clamp(130px, 23vh, 190px); border-radius: 15px; background: #ffe8d1; }
+.photo-art svg { display: block; width: 100%; height: 100%; border-radius: inherit; }
 .photo-card strong { overflow: hidden; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
 .photo-card small { color: #8f776b; font-size: 11px; }
 .photo-card p { display: -webkit-box; overflow: hidden; margin: 0; font-size: 12px; text-overflow: ellipsis; -webkit-box-orient: vertical; -webkit-line-clamp: 1; }

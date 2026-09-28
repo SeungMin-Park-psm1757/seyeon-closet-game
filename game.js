@@ -8,7 +8,7 @@
   const saved = read();
   const state = {
     view: 'home', mode: saved.mode || 'free', themeId: saved.themeId || '', characterId: saved.characterId || 'girl01',
-    outfit: { hair: 'hair_01', ...(saved.outfit || {}) }, backgroundId: saved.backgroundId || 'room', categoryId: 'hair',
+    outfit: { hair: 'hair_01', shoes: 'shoes_01', ...(saved.outfit || {}) }, backgroundId: saved.backgroundId || 'room', categoryId: 'hair',
     history: [], album: Array.isArray(saved.album) ? saved.album.slice(0, 20) : [],
     completed: Math.max(0, Number(saved.completed) || 0), muted: Boolean(saved.muted), sparkle: '',
     sound: null
@@ -75,9 +75,9 @@
     return `${ears}<path d="M111 145Q91 46 179 42Q270 42 250 157L237 224L218 205L221 101Q179 121 139 101L136 210L116 226Z" fill="${hair}" stroke="#543c38" stroke-width="5"/><path d="M137 208L151 208L151 234L209 234L209 208L223 208L237 238L261 255L239 285L224 268L231 353L129 353L136 268L121 285L99 255L123 238Z" fill="${skin}" stroke="#9a6b5a" stroke-width="4" stroke-linejoin="round"/><path d="M151 208Q180 220 209 208L215 240L145 240Z" fill="${skin}"/><path d="M130 345L230 345L222 431L185 431L180 377L171 431L134 431Z" fill="${skin}" stroke="#9a6b5a" stroke-width="4"/><path d="M137 228L157 218Q180 234 203 218L223 228L239 251L222 266L213 252L221 346Q180 357 139 346L147 252L138 266L121 251Z" fill="#efb5c6" stroke="#c67f97" stroke-width="4" stroke-linejoin="round"/><path d="M139 348Q180 361 221 348L215 387Q180 396 145 387Z" fill="#9bbbe9" stroke="#718eae" stroke-width="4"/><path d="M119 447Q137 454 160 447L167 459Q153 474 112 464ZM200 447Q222 454 241 447L248 459Q235 474 195 464Z" fill="#fff7e9" stroke="#9a6b5a" stroke-width="4"/><path d="M123 458L160 458M200 458L238 458" stroke="#ed9eb3" stroke-width="4" stroke-linecap="round"/><ellipse cx="180" cy="137" rx="79" ry="91" fill="${skin}" stroke="#9a6b5a" stroke-width="4"/>${face}`;
   }
 
-  function avatarSvg() {
-    const person = character();
-    const selections = selectedItems().slice().sort((a, b) => (data.layers[a.category] || a.layer) - (data.layers[b.category] || b.layer));
+  function avatarSvg(snapshot = state) {
+    const person = charById[snapshot.characterId] || character();
+    const selections = Object.values(snapshot.outfit || {}).map(id => itemById[id]).filter(Boolean).sort((a, b) => (data.layers[a.category] || a.layer) - (data.layers[b.category] || b.layer));
     const hair = selections.find(item => item.category === 'hair');
     let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 500" role="img" aria-label="${esc(person.nameKo)} 캐릭터">`;
     if (hair) svg += `<g data-layer="hairBack">${svgItem(hair, 'back')}</g>`;
@@ -90,11 +90,11 @@
     return `${svg}</svg>`;
   }
 
-  function photoSource() {
-    const bg = background(), custom = window.ASSETS.backgrounds[bg.id];
-    const avatar = avatarSvg().replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '');
-    const art = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 360"><rect width="500" height="360" fill="${bg.color}"/>${custom ? `<image href="${esc(custom)}" width="500" height="360" preserveAspectRatio="xMidYMid slice"/>` : ''}<circle cx="74" cy="72" r="32" fill="#fff7"/><path d="M0 260Q125 230 250 258T500 250V360H0Z" fill="#ffffff4d"/><text x="42" y="84" font-size="35">${bg.icon}</text><g transform="translate(120 8) scale(.72)">${avatar}</g></svg>`;
-    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(art)}`;
+  function photoSvg(photo) {
+    const bg = backgroundById[photo.backgroundId] || data.backgrounds[0], custom = window.ASSETS.backgrounds[bg.id];
+    const person = charById[photo.characterId] || data.characters[0];
+    const avatar = avatarSvg(photo).replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '');
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 360" role="img" aria-label="${esc(person.nameKo)}의 코디"><rect width="500" height="360" fill="${bg.color}"/>${custom ? `<image href="${esc(custom)}" width="500" height="360" preserveAspectRatio="xMidYMid slice"/>` : ''}<circle cx="74" cy="72" r="32" fill="#fff7"/><path d="M0 260Q125 230 250 258T500 250V360H0Z" fill="#ffffff4d"/><text x="42" y="84" font-size="35">${bg.icon}</text><g transform="translate(120 8) scale(.72)">${avatar}</g></svg>`;
   }
   function stageArt() {
     const bg = background(), custom = window.ASSETS.backgrounds[bg.id];
@@ -195,7 +195,7 @@
   }
 
   function renderAlbum() {
-    return `<section class="album-page"><header class="simple-header"><button class="round-button" data-action="home" aria-label="홈">⌂</button><h1>나의 사진첩</h1><span></span></header>${state.album.length ? `<div class="album-grid">${state.album.map(photo => `<article class="photo-card"><img src="${photo.image}" alt="${esc(photo.character)}의 코디"><strong>${esc(photo.character)}의 코디</strong><small>${esc(photo.date)} · ${esc(photo.background)}</small><p>${esc(photo.items.slice(0, 3).join(' · ') || '새로운 코디')}</p></article>`).join('')}</div>` : `<div class="empty-album"><span>📸</span><strong>아직 사진이 없어요</strong><p>마음에 드는 코디를 사진으로 남겨요!</p><button class="big-button pink" data-action="characters"><span>👗</span><strong>옷 입히기</strong></button></div>`}<button class="bottom-back" data-action="home">홈으로</button></section>`;
+    return `<section class="album-page"><header class="simple-header"><button class="round-button" data-action="home" aria-label="홈">⌂</button><h1>나의 사진첩</h1><span></span></header>${state.album.length ? `<div class="album-grid">${state.album.map(photo => `<article class="photo-card"><div class="photo-art">${photoSvg(photo)}</div><strong>${esc(photo.character)}의 코디</strong><small>${esc(photo.date)} · ${esc(photo.background)}</small><p>${esc(photo.items.slice(0, 3).join(' · ') || '새로운 코디')}</p></article>`).join('')}</div>` : `<div class="empty-album"><span>📸</span><strong>아직 사진이 없어요</strong><p>마음에 드는 코디를 사진으로 남겨요!</p><button class="big-button pink" data-action="characters"><span>👗</span><strong>옷 입히기</strong></button></div>`}<button class="bottom-back" data-action="home">홈으로</button></section>`;
   }
 
   function render() {
@@ -222,7 +222,7 @@
     state.completed += 1; state.view = 'finish'; state.sparkle = ''; persist(); render(); play('complete');
   }
   function savePhoto() {
-    const photo = { image: photoSource(), character: character().nameKo, background: background().nameKo, items: selectedItems().map(item => item.nameKo), date: new Intl.DateTimeFormat('ko-KR', { dateStyle: 'short' }).format(new Date()) };
+    const photo = { characterId: state.characterId, outfit: { ...state.outfit }, backgroundId: state.backgroundId, character: character().nameKo, background: background().nameKo, items: selectedItems().map(item => item.nameKo), date: new Intl.DateTimeFormat('ko-KR', { dateStyle: 'short' }).format(new Date()) };
     state.album.unshift(photo); state.album = state.album.slice(0, 20); persist(); play('photo'); state.view = 'album'; render();
   }
   function randomOutfit() {
@@ -258,7 +258,7 @@
         if (previous) { state.outfit = previous.outfit; state.backgroundId = previous.backgroundId; persist(); render(); play('dress'); }
       }
       else if (action === 'random') randomOutfit();
-      else if (action === 'reset') { pushUndo(); state.outfit = { hair: 'hair_01' }; persist(); render(); }
+      else if (action === 'reset') { pushUndo(); state.outfit = { hair: 'hair_01', shoes: 'shoes_01' }; persist(); render(); }
       else if (action === 'finish') finish();
       else if (action === 'photo') savePhoto();
       else if (action === 'again') continueDressing();

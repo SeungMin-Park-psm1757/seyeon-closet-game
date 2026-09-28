@@ -1,36 +1,44 @@
 (() => {
   'use strict';
   const data = window.GAME_DATA;
+  const rules = window.OUTFIT_RULES;
+  if (!rules) throw new Error('OUTFIT_RULES must load before game.js');
   const ART_WIDTH = 360, ART_HEIGHT = 480;
   const $ = (selector, root = document) => root.querySelector(selector);
   const app = $('#app');
   const key = 'seyeon-closet-save';
   const read = () => { try { return JSON.parse(localStorage.getItem(key)) || {}; } catch { return {}; } };
   const saved = read();
+  const itemById = Object.fromEntries(data.items.map(item => [item.id, item]));
+  const charById = Object.fromEntries(data.characters.map(character => [character.id, character]));
+  const backgroundById = Object.fromEntries(data.backgrounds.map(background => [background.id, background]));
+  const initialOutfit = saved.outfit && typeof saved.outfit === 'object' && !Array.isArray(saved.outfit)
+    ? rules.normalizeOutfit(saved.outfit, itemById)
+    : rules.normalizeOutfit({ hair: 'hair_01', shoes: 'shoes_01' }, itemById);
   const state = {
     view: 'home', mode: saved.mode || 'free', themeId: saved.themeId || '', characterId: saved.characterId || 'girl01',
-    outfit: { hair: 'hair_01', shoes: 'shoes_01', ...(saved.outfit || {}) }, backgroundId: saved.backgroundId || 'room', categoryId: 'hair',
+    outfit: initialOutfit, backgroundId: saved.backgroundId || 'room', categoryId: 'hair',
     history: [], album: Array.isArray(saved.album) ? saved.album.slice(0, 20) : [],
     completed: Math.max(0, Number(saved.completed) || 0), muted: Boolean(saved.muted), sparkle: '',
     sound: null
   };
-  const itemById = Object.fromEntries(data.items.map(item => [item.id, item]));
-  const charById = Object.fromEntries(data.characters.map(character => [character.id, character]));
-  const backgroundById = Object.fromEntries(data.backgrounds.map(background => [background.id, background]));
+  const railScroll = { categories: 0, items: Object.create(null) };
+  let renderedCategoryId = state.categoryId;
   let context = null, beat = 0, bgmTimer = 0, toastTimer = 0;
   const phrases = ['예쁘다!', '멋져요!', '정말 잘 골랐어요!', '짜잔!'];
 
   function persist() {
     try {
+      state.outfit = rules.normalizeOutfit(state.outfit, itemById);
       localStorage.setItem(key, JSON.stringify({ characterId: state.characterId, outfit: state.outfit, backgroundId: state.backgroundId, themeId: state.themeId, mode: state.mode, album: state.album.slice(0, 20), completed: state.completed, muted: state.muted }));
     } catch { /* 사진은 다시 찍을 수 있고, 저장 공간이 부족해도 꾸미기는 계속됩니다. */ }
   }
   function character() { return charById[state.characterId] || data.characters[0]; }
   function background() { return backgroundById[state.backgroundId] || data.backgrounds[0]; }
-  function selectedItems() { return Object.values(state.outfit).map(id => itemById[id]).filter(Boolean); }
+  function selectedItems() { return Object.values(rules.normalizeOutfit(state.outfit, itemById)).map(id => itemById[id]).filter(Boolean); }
   function unlocked(item) { return !item.lockedAt || state.completed >= item.lockedAt; }
   function pushUndo() {
-    state.history.push({ outfit: { ...state.outfit }, backgroundId: state.backgroundId });
+    state.history.push({ outfit: rules.normalizeOutfit(state.outfit, itemById), backgroundId: state.backgroundId });
     if (state.history.length > 10) state.history.shift();
   }
   function esc(value) { return String(value).replace(/[&<>"']/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[char]); }
@@ -104,7 +112,8 @@
 
   function avatarSvg(snapshot = state) {
     const person = charById[snapshot.characterId] || character();
-    const selections = Object.values(snapshot.outfit || {}).map(id => itemById[id]).filter(Boolean).sort((a, b) => (data.layers[a.category] || a.layer) - (data.layers[b.category] || b.layer));
+    const safeOutfit = rules.normalizeOutfit(snapshot.outfit || {}, itemById);
+    const selections = Object.values(safeOutfit).map(id => itemById[id]).filter(Boolean).sort((a, b) => (data.layers[a.category] || a.layer) - (data.layers[b.category] || b.layer));
     const hair = selections.find(item => item.category === 'hair');
     let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${ART_WIDTH} ${ART_HEIGHT}" role="img" aria-label="${esc(person.nameKo)} 캐릭터">`;
     if (hair) svg += `<g data-layer="hairBack">${svgItem(hair, 'back')}</g>`;
@@ -224,7 +233,8 @@
       ? data.backgrounds.map(bg => { const art = window.ASSETS.backgrounds[bg.id]; return `<button class="item-card ${state.backgroundId === bg.id ? 'chosen' : ''}" data-background="${bg.id}"><span class="item-picture scene-thumb ${art ? 'has-art' : ''}" style="--swatch:${bg.color}${art ? `;background-image:url('${esc(runtimeAsset(art))}')` : ''}">${art ? '' : bg.icon}</span><strong>${bg.nameKo}</strong>${state.backgroundId === bg.id ? '<i>✓</i>' : ''}</button>`; }).join('')
       : data.items.filter(item => item.category === state.categoryId).map(itemCard).join('');
     const theme = state.mode === 'story' ? data.themes.find(entry => entry.id === state.themeId) : null;
-    return `<section class="editor-page">${header()}<main class="editor-stage">${stageArt()}<div class="stage-caption">${theme ? esc(theme.promptKo || theme.title) : `${character().emoji} ${character().nameKo}`}</div></main><nav class="category-rail" aria-label="꾸미기 종류">${data.categories.map(category => `<button class="category-button ${state.categoryId === category.id ? 'active' : ''}" data-category="${category.id}"><span>${categoryIcon(category.id)}</span><small>${category.name}</small></button>`).join('')}<button class="category-button ${state.categoryId === 'background' ? 'active' : ''}" data-category="background"><span>${categoryIcon('background')}</span><small>배경</small></button></nav><div class="item-rail" aria-label="${currentCategory?.name || '배경'} 선택">${items}</div><footer class="editor-actions"><button class="action-button magic" data-action="random"><span>🪄</span><strong>마법 코디</strong></button><button class="action-button reset" data-action="reset"><span>🫧</span><strong>처음부터</strong></button><button class="action-button finish-button" data-action="finish"><span>✨</span><strong>완성!</strong></button></footer></section>`;
+    const categoryButtons = `${data.categories.map(category => `<button class="category-button ${state.categoryId === category.id ? 'active' : ''}" data-category="${category.id}"><span>${categoryIcon(category.id)}</span><small>${category.name}</small></button>`).join('')}<button class="category-button ${state.categoryId === 'background' ? 'active' : ''}" data-category="background"><span>${categoryIcon('background')}</span><small>배경</small></button>`;
+    return `<section class="editor-page">${header()}<main class="editor-stage">${stageArt()}<div class="stage-caption">${theme ? esc(theme.promptKo || theme.title) : `${character().emoji} ${character().nameKo}`}</div></main><div class="rail-shell category-shell"><button class="rail-arrow" data-scroll-rail="category" data-direction="-1" aria-label="이전 꾸미기 종류">‹</button><nav class="category-rail" aria-label="꾸미기 종류">${categoryButtons}</nav><button class="rail-arrow" data-scroll-rail="category" data-direction="1" aria-label="다음 꾸미기 종류">›</button></div><div class="rail-shell item-shell"><button class="rail-arrow" data-scroll-rail="item" data-direction="-1" aria-label="이전 선택지">‹</button><div class="item-rail" aria-label="${currentCategory?.name || '배경'} 선택">${items}</div><button class="rail-arrow" data-scroll-rail="item" data-direction="1" aria-label="다음 선택지">›</button></div><footer class="editor-actions"><button class="action-button magic" data-action="random"><span>🪄</span><strong>마법 코디</strong></button><button class="action-button reset" data-action="reset"><span>🫧</span><strong>처음부터</strong></button><button class="action-button finish-button" data-action="finish"><span>✨</span><strong>완성!</strong></button></footer></section>`;
   }
 
   function renderFinish() {
@@ -238,7 +248,65 @@
     return `<section class="album-page"><header class="simple-header"><button class="round-button" data-action="home" aria-label="홈">⌂</button><h1>나의 사진첩</h1><span></span></header>${state.album.length ? `<div class="album-grid">${state.album.map(photo => `<article class="photo-card"><div class="photo-art">${photoSvg(photo)}</div><strong>${esc(photo.character)}의 코디</strong><small>${esc(photo.date)} · ${esc(photo.background)}</small><p>${esc(photo.items.slice(0, 3).join(' · ') || '새로운 코디')}</p></article>`).join('')}</div>` : `<div class="empty-album"><span>📸</span><strong>아직 사진이 없어요</strong><p>마음에 드는 코디를 사진으로 남겨요!</p><button class="big-button pink" data-action="characters"><span>👗</span><strong>옷 입히기</strong></button></div>`}<button class="bottom-back" data-action="home">홈으로</button></section>`;
   }
 
+  function focusToken(button) {
+    if (!button?.dataset) return null;
+    for (const name of ['item', 'category', 'action', 'background']) {
+      if (button.dataset[name]) return { name, value: button.dataset[name] };
+    }
+    return null;
+  }
+  function captureEditorUi() {
+    if (document.body.dataset.view !== 'editor') return null;
+    const categoryRail = $('.category-rail');
+    const itemRail = $('.item-rail');
+    if (categoryRail) railScroll.categories = categoryRail.scrollLeft;
+    if (itemRail) railScroll.items[renderedCategoryId] = itemRail.scrollLeft;
+    return { focus: focusToken(document.activeElement?.closest?.('button')) };
+  }
+  function clampScroll(rail, value) {
+    return Math.max(0, Math.min(Number(value) || 0, Math.max(0, rail.scrollWidth - rail.clientWidth)));
+  }
+  function syncRailArrows(kind) {
+    const rail = kind === 'category' ? $('.category-rail') : $('.item-rail');
+    if (!rail) return;
+    const max = Math.max(0, rail.scrollWidth - rail.clientWidth);
+    const buttons = app.querySelectorAll(`[data-scroll-rail="${kind}"]`);
+    for (const button of buttons) {
+      const direction = Number(button.dataset.direction);
+      button.disabled = direction < 0 ? rail.scrollLeft <= 1 : rail.scrollLeft >= max - 1;
+    }
+  }
+  function restoreEditorUi(snapshot) {
+    const categoryRail = $('.category-rail');
+    const itemRail = $('.item-rail');
+    if (categoryRail) {
+      categoryRail.scrollLeft = clampScroll(categoryRail, railScroll.categories);
+      categoryRail.addEventListener('scroll', () => {
+        railScroll.categories = categoryRail.scrollLeft;
+        syncRailArrows('category');
+      }, { passive: true });
+    }
+    if (itemRail) {
+      const stored = Object.prototype.hasOwnProperty.call(railScroll.items, state.categoryId);
+      itemRail.scrollLeft = clampScroll(itemRail, stored ? railScroll.items[state.categoryId] : 0);
+      itemRail.addEventListener('scroll', () => {
+        railScroll.items[state.categoryId] = itemRail.scrollLeft;
+        syncRailArrows('item');
+      }, { passive: true });
+      if (!stored) $('.category-button.active')?.scrollIntoView({ block:'nearest', inline:'nearest' });
+    }
+    syncRailArrows('category');
+    syncRailArrows('item');
+    if (snapshot?.focus) {
+      requestAnimationFrame(() => {
+        const target = app.querySelector(`[data-${snapshot.focus.name}="${snapshot.focus.value}"]`);
+        target?.focus({ preventScroll: true });
+      });
+    }
+    renderedCategoryId = state.categoryId;
+  }
   function render() {
+    const editorUi = captureEditorUi();
     document.body.dataset.view = state.view;
     app.innerHTML = state.view === 'home' ? renderHome()
       : state.view === 'themes' ? renderThemes()
@@ -246,6 +314,7 @@
       : state.view === 'editor' ? renderEditor()
       : state.view === 'finish' ? renderFinish()
       : renderAlbum();
+    if (state.view === 'editor') restoreEditorUi(editorUi);
   }
 
   function begin(mode, themeId = '') {
@@ -263,19 +332,12 @@
     state.completed += 1; state.view = 'finish'; state.sparkle = ''; persist(); render(); play('complete');
   }
   function savePhoto() {
-    const photo = { characterId: state.characterId, outfit: { ...state.outfit }, backgroundId: state.backgroundId, character: character().nameKo, background: background().nameKo, items: selectedItems().map(item => item.nameKo), date: new Intl.DateTimeFormat('ko-KR', { dateStyle: 'short' }).format(new Date()) };
+    const photo = { characterId: state.characterId, outfit: rules.normalizeOutfit(state.outfit, itemById), backgroundId: state.backgroundId, character: character().nameKo, background: background().nameKo, items: selectedItems().map(item => item.nameKo), date: new Intl.DateTimeFormat('ko-KR', { dateStyle: 'short' }).format(new Date()) };
     state.album.unshift(photo); state.album = state.album.slice(0, 20); persist(); play('photo'); state.view = 'album'; render();
   }
   function randomOutfit() {
     pushUndo();
-    const choose = list => list[Math.floor(Math.random() * list.length)];
-    const categories = ['hair', Math.random() < .55 ? 'dress' : 'top', 'shoes', 'accessory', 'headAccessory'];
-    if (categories.includes('top')) categories.push(Math.random() < .55 ? 'pants' : 'skirt');
-    for (const id of categories) {
-      const available = data.items.filter(item => item.category === id && unlocked(item));
-      const item = choose(available);
-      if (item) state.outfit[id] = item.id;
-    }
+    state.outfit = rules.buildRandomOutfit(data.items, itemById, Math.random, unlocked);
     state.view = 'editor'; persist(); play('random'); state.sparkle = '✨'; render();
     setTimeout(() => { state.sparkle = ''; if (state.view === 'editor') render(); }, 500);
   }
@@ -296,14 +358,25 @@
       else if (action === 'continue') continueDressing();
       else if (action === 'undo') {
         const previous = state.history.pop();
-        if (previous) { state.outfit = previous.outfit; state.backgroundId = previous.backgroundId; persist(); render(); play('dress'); }
+        if (previous) { state.outfit = rules.normalizeOutfit(previous.outfit, itemById); state.backgroundId = previous.backgroundId; persist(); render(); play('dress'); }
       }
       else if (action === 'random') randomOutfit();
-      else if (action === 'reset') { pushUndo(); state.outfit = { hair: 'hair_01', shoes: 'shoes_01' }; persist(); render(); }
+      else if (action === 'reset') { pushUndo(); state.outfit = rules.normalizeOutfit({ hair: 'hair_01', shoes: 'shoes_01' }, itemById); persist(); render(); }
       else if (action === 'finish') finish();
       else if (action === 'photo') savePhoto();
       else if (action === 'again') continueDressing();
       else if (action === 'friends') { state.view = 'characters'; begin('free'); }
+      return;
+    }
+    if (button.dataset.scrollRail) {
+      const kind = button.dataset.scrollRail;
+      const rail = kind === 'category' ? $('.category-rail') : $('.item-rail');
+      if (rail) {
+        const direction = Number(button.dataset.direction) || 1;
+        const distance = Math.max(160, rail.clientWidth * .78);
+        rail.scrollBy({ left: direction * distance, behavior: 'smooth' });
+        setTimeout(() => syncRailArrows(kind), 260);
+      }
       return;
     }
     if (button.dataset.theme) { begin('story', button.dataset.theme); return; }
@@ -315,8 +388,7 @@
       if (!unlocked(item)) { notice(`꾸미기 ${item.lockedAt}번 하면 열려요!`); return; }
       if (state.mode === 'story' && (data.themes.find(theme => theme.id === state.themeId)?.recommended || []).includes(item.id)) notice('잘 어울려요!');
       pushUndo();
-      if (state.outfit[item.category] === item.id && item.category !== 'hair') delete state.outfit[item.category];
-      else state.outfit[item.category] = item.id;
+      state.outfit = rules.applyItemSelection(state.outfit, item.id, itemById);
       state.view = 'editor'; persist(); doSparkle(); render(); play('dress'); return;
     }
     if (button.dataset.background) { pushUndo(); state.backgroundId = button.dataset.background; persist(); render(); play('dress'); }

@@ -69,35 +69,53 @@
       : `<span class="character-face">${person.emoji}</span>`;
   }
 
-  function svgItem(item, part = '') {
+  function svgItem(item, part = '', person = null) {
     if (!item) return '';
-    const custom = window.ASSETS.items[item.id] || item.asset;
+    const custom = person?.id === 'girl01' ? window.ASSETS.items[item.id] || item.asset : null;
     if (custom) return part === 'back' ? '' : `<image href="${esc(runtimeAsset(custom))}" x="0" y="0" width="${ART_WIDTH}" height="${ART_HEIGHT}" preserveAspectRatio="xMidYMid meet"/>`;
     const c = item.color, v = item.variant, detail = ['✿','♥','★','✦'][v % 4];
     switch (item.category) {
       case 'hair':
+        if (person?.id === 'girl01') return part === 'back'
+          ? `<path d="M99 129Q83 15 180 15Q277 15 261 129L256 229L234 212L230 101Q180 138 130 101L126 212L104 229Z" fill="${c}" stroke="#65413c" stroke-width="5" stroke-linejoin="round"/>`
+          : `<path d="M99 119Q93 15 180 15Q267 15 261 119Q238 100 219 104Q195 112 179 97Q152 117 127 103Z" fill="${c}" stroke="#65413c" stroke-width="5"/><path d="M105 111Q104 158 121 177M255 111Q256 155 239 172" fill="none" stroke="${c}" stroke-width="17" stroke-linecap="round"/>`;
         return part === 'back'
           ? `<path d="M91 139Q72 30 177 30Q287 25 270 151L263 239L236 213L232 105Q179 149 121 105L115 218L88 239Z" fill="${c}" stroke="#65413c" stroke-width="5" stroke-linejoin="round"/>`
           : `<path d="M101 119Q101 35 180 37Q259 34 260 120Q238 99 219 104Q195 112 179 97Q152 117 127 103Z" fill="${c}" stroke="#65413c" stroke-width="5"/><path d="M106 111Q105 159 121 177M254 111Q255 155 238 172" fill="none" stroke="${c}" stroke-width="17" stroke-linecap="round"/>`;
-      case 'top': return `<path d="M135 212L157 202Q180 222 203 202L225 212L251 243L228 260L218 246L230 347Q180 361 130 347L142 246L132 260L109 243Z" fill="${c}" stroke="#805366" stroke-width="4" stroke-linejoin="round"/><path d="M146 216Q180 239 214 216" fill="none" stroke="#fff5e9" stroke-width="7"/><text x="180" y="300" text-anchor="middle" font-size="27" fill="#fff9e8">${detail}</text>`;
-      case 'dress': return `<path d="M143 211L160 204Q180 225 200 204L217 211L237 242L218 256L207 244L259 377Q180 399 101 377L153 244L142 256L123 242Z" fill="${c}" stroke="#805366" stroke-width="4" stroke-linejoin="round"/><path d="M146 216Q180 239 214 216M118 356Q180 372 242 356" fill="none" stroke="#fff4e6" stroke-width="7"/><text x="180" y="315" text-anchor="middle" font-size="34" fill="#fff9e8">${detail}</text>`;
-      case 'skirt': return `<path d="M137 307Q180 321 223 307L253 385Q180 403 107 385Z" fill="${c}" stroke="#805366" stroke-width="4"/><path d="M131 329Q180 342 229 329" fill="none" stroke="#fff5e9" stroke-width="7"/><text x="180" y="373" text-anchor="middle" font-size="28" fill="#fff9e8">${detail}</text>`;
-      case 'pants': return `<path d="M130 305L230 305L221 432L187 432L178 351L166 432L132 432Z" fill="${c}" stroke="#805366" stroke-width="4" stroke-linejoin="round"/><path d="M135 320L225 320" stroke="#fff5e9" stroke-width="6"/>`;
+      case 'top': return person?.id === 'girl01'
+        ? `<path d="M135 177L158 168Q180 185 202 168L225 177L251 209L228 226L217 212L222 250Q180 258 138 250L143 212L132 226L109 209Z" fill="${c}" stroke="#805366" stroke-width="4" stroke-linejoin="round"/><path d="M146 177Q180 199 214 177" fill="none" stroke="#fff5e9" stroke-width="6"/><text x="180" y="229" text-anchor="middle" font-size="20" fill="#fff9e8">${detail}</text>`
+        : `<path d="M135 212L157 202Q180 222 203 202L225 212L251 243L228 260L218 246L230 347Q180 361 130 347L142 246L132 260L109 243Z" fill="${c}" stroke="#805366" stroke-width="4" stroke-linejoin="round"/><path d="M146 216Q180 239 214 216" fill="none" stroke="#fff5e9" stroke-width="7"/><text x="180" y="300" text-anchor="middle" font-size="27" fill="#fff9e8">${detail}</text>`;
+      case 'dress': return person?.id === 'girl01'
+        ? `<path d="M135 177L158 168Q180 185 202 168L225 177L251 209L228 226L217 212L255 372Q180 390 105 372L143 212L132 226L109 209Z" fill="${c}" stroke="#805366" stroke-width="4" stroke-linejoin="round"/><path d="M146 177Q180 199 214 177M120 352Q180 369 240 352" fill="none" stroke="#fff4e6" stroke-width="7"/><text x="180" y="300" text-anchor="middle" font-size="28" fill="#fff9e8">${detail}</text>`
+        : `<path d="M143 211L160 204Q180 225 200 204L217 211L237 242L218 256L207 244L259 377Q180 399 101 377L153 244L142 256L123 242Z" fill="${c}" stroke="#805366" stroke-width="4" stroke-linejoin="round"/><path d="M146 216Q180 239 214 216M118 356Q180 372 242 356" fill="none" stroke="#fff4e6" stroke-width="7"/><text x="180" y="315" text-anchor="middle" font-size="34" fill="#fff9e8">${detail}</text>`;
+      case 'skirt': return person?.id === 'girl01'
+        ? `<path d="M137 252Q180 266 223 252L253 372Q180 390 107 372Z" fill="${c}" stroke="#805366" stroke-width="4"/><path d="M131 272Q180 287 229 272" fill="none" stroke="#fff5e9" stroke-width="7"/><text x="180" y="358" text-anchor="middle" font-size="25" fill="#fff9e8">${detail}</text>`
+        : `<path d="M137 307Q180 321 223 307L253 385Q180 403 107 385Z" fill="${c}" stroke="#805366" stroke-width="4"/><path d="M131 329Q180 342 229 329" fill="none" stroke="#fff5e9" stroke-width="7"/><text x="180" y="373" text-anchor="middle" font-size="28" fill="#fff9e8">${detail}</text>`;
+      case 'pants': return person?.id === 'girl01'
+        ? `<path d="M130 250L230 250L221 432L187 432L178 337L166 432L132 432Z" fill="${c}" stroke="#805366" stroke-width="4" stroke-linejoin="round"/><path d="M135 266L225 266" stroke="#fff5e9" stroke-width="6"/>`
+        : `<path d="M130 305L230 305L221 432L187 432L178 351L166 432L132 432Z" fill="${c}" stroke="#805366" stroke-width="4" stroke-linejoin="round"/><path d="M135 320L225 320" stroke="#fff5e9" stroke-width="6"/>`;
       case 'shoes': return `<path d="M119 430Q144 439 165 430L170 453Q158 469 111 460Q101 450 119 430ZM194 430Q216 439 241 430L251 451Q251 468 203 461Q186 456 194 430Z" fill="${c}" stroke="#805366" stroke-width="4"/><path d="M114 453Q140 462 166 452M197 453Q225 462 248 452" stroke="#fff9ed" stroke-width="5" stroke-linecap="round"/>`;
-      case 'hat': return v % 4 === 3
-        ? `<path d="M136 90L145 57L166 72L180 43L196 72L218 57L225 92Z" fill="${c}" stroke="#805366" stroke-width="4"/><path d="M127 94Q180 78 233 94L226 109Q180 119 134 108Z" fill="#fff1c5" stroke="#805366" stroke-width="4"/>`
-        : `<path d="M143 97Q143 57 180 56Q217 57 217 97Z" fill="${c}" stroke="#805366" stroke-width="4"/><path d="M123 99Q180 83 237 99Q230 114 180 113Q130 114 123 99Z" fill="#fff1c5" stroke="#805366" stroke-width="4"/><text x="180" y="96" text-anchor="middle" font-size="19">${detail}</text>`;
+      case 'hat': {
+        const art = v % 4 === 3
+          ? `<path d="M136 90L145 57L166 72L180 43L196 72L218 57L225 92Z" fill="${c}" stroke="#805366" stroke-width="4"/><path d="M127 94Q180 78 233 94L226 109Q180 119 134 108Z" fill="#fff1c5" stroke="#805366" stroke-width="4"/>`
+          : `<path d="M143 97Q143 57 180 56Q217 57 217 97Z" fill="${c}" stroke="#805366" stroke-width="4"/><path d="M123 99Q180 83 237 99Q230 114 180 113Q130 114 123 99Z" fill="#fff1c5" stroke="#805366" stroke-width="4"/><text x="180" y="96" text-anchor="middle" font-size="19">${detail}</text>`;
+        return person?.id === 'girl01' ? `<g transform="translate(0 -32)">${art}</g>` : art;
+      }
       case 'headAccessory': return `<path d="M153 77Q139 50 166 53L180 69L194 53Q221 50 207 77L180 91Z" fill="${c}" stroke="#805366" stroke-width="4"/><circle cx="180" cy="76" r="7" fill="#ffe99a"/>`;
       case 'accessory': return v === 4 || v === 5 || v === 6
-        ? `<g fill="none" stroke="${c}" stroke-width="7"><circle cx="145" cy="137" r="21"/><circle cx="215" cy="137" r="21"/><path d="M166 137Q180 126 194 137"/></g><circle cx="145" cy="137" r="3" fill="#513832"/><circle cx="215" cy="137" r="3" fill="#513832"/>`
-        : `<path d="M145 217Q180 257 215 217" fill="none" stroke="${c}" stroke-width="7"/><path d="M180 235l7 8-7 8-7-8z" fill="#ffe477"/><text x="180" y="252" text-anchor="middle" font-size="17" fill="${c}">${detail}</text>`;
+        ? person?.id === 'girl01'
+          ? `<g fill="none" stroke="${c}" stroke-width="6"><circle cx="144" cy="101" r="17"/><circle cx="216" cy="101" r="17"/><path d="M161 101Q180 93 199 101"/></g><circle cx="144" cy="101" r="3" fill="#513832"/><circle cx="216" cy="101" r="3" fill="#513832"/>`
+          : `<g fill="none" stroke="${c}" stroke-width="7"><circle cx="145" cy="137" r="21"/><circle cx="215" cy="137" r="21"/><path d="M166 137Q180 126 194 137"/></g><circle cx="145" cy="137" r="3" fill="#513832"/><circle cx="215" cy="137" r="3" fill="#513832"/>`
+        : person?.id === 'girl01'
+          ? `<path d="M151 173Q180 203 209 173" fill="none" stroke="${c}" stroke-width="6"/><path d="M180 187l6 7-6 7-6-7z" fill="#ffe477"/><text x="180" y="202" text-anchor="middle" font-size="15" fill="${c}">${detail}</text>`
+          : `<path d="M145 217Q180 257 215 217" fill="none" stroke="${c}" stroke-width="7"/><path d="M180 235l7 8-7 8-7-8z" fill="#ffe477"/><text x="180" y="252" text-anchor="middle" font-size="17" fill="${c}">${detail}</text>`;
       case 'bag': return `<path d="M206 257Q249 240 252 295" fill="none" stroke="#805366" stroke-width="6"/><rect x="218" y="286" width="64" height="74" rx="19" fill="${c}" stroke="#805366" stroke-width="4"/><path d="M236 290Q238 268 251 268Q266 268 266 290" fill="none" stroke="#805366" stroke-width="5"/><text x="250" y="333" text-anchor="middle" font-size="27">${detail}</text>`;
       case 'toy': return `<g transform="translate(0 3)"><path d="M109 259Q97 250 94 270L106 292L119 280M138 268Q125 248 119 266L128 286" fill="${c}" stroke="#805366" stroke-width="4"/><circle cx="124" cy="299" r="24" fill="${c}" stroke="#805366" stroke-width="4"/><circle cx="116" cy="296" r="3" fill="#533c3a"/><circle cx="132" cy="296" r="3" fill="#533c3a"/><path d="M119 306Q124 312 130 306" fill="none" stroke="#533c3a" stroke-width="3" stroke-linecap="round"/></g>`;
       default: return '';
     }
   }
 
-  function bodySvg(person) {
+  function bodySvg(person, includeBaseHair = true) {
     const skin = person.skin, hair = person.hair;
     const custom = window.ASSETS.characters[person.id];
     if (custom) return `<image href="${esc(runtimeAsset(custom))}" x="0" y="0" width="${ART_WIDTH}" height="${ART_HEIGHT}" preserveAspectRatio="xMidYMid meet"/>`;
@@ -107,7 +125,8 @@
     const face = person.kind === 'human'
       ? `<circle cx="151" cy="137" r="5" fill="#503b38"/><circle cx="209" cy="137" r="5" fill="#503b38"/><path d="M166 170Q180 181 194 170" fill="none" stroke="#a9575d" stroke-width="4" stroke-linecap="round"/><ellipse cx="139" cy="158" rx="11" ry="6" fill="${person.blush}" opacity=".65"/><ellipse cx="221" cy="158" rx="11" ry="6" fill="${person.blush}" opacity=".65"/>`
       : `<ellipse cx="180" cy="154" rx="39" ry="30" fill="#f7e5d5"/><circle cx="162" cy="137" r="5" fill="#503b38"/><circle cx="198" cy="137" r="5" fill="#503b38"/><ellipse cx="180" cy="154" rx="7" ry="5" fill="#74514a"/><path d="M180 159Q174 169 166 163M180 159Q187 169 194 163" fill="none" stroke="#74514a" stroke-width="3" stroke-linecap="round"/><ellipse cx="139" cy="158" rx="10" ry="6" fill="${person.blush}" opacity=".65"/><ellipse cx="221" cy="158" rx="10" ry="6" fill="${person.blush}" opacity=".65"/>`;
-    return `${ears}<path d="M111 145Q91 46 179 42Q270 42 250 157L237 224L218 205L221 101Q179 121 139 101L136 210L116 226Z" fill="${hair}" stroke="#543c38" stroke-width="5"/><path d="M137 208L151 208L151 234L209 234L209 208L223 208L237 238L261 255L239 285L224 268L231 353L129 353L136 268L121 285L99 255L123 238Z" fill="${skin}" stroke="#9a6b5a" stroke-width="4" stroke-linejoin="round"/><path d="M151 208Q180 220 209 208L215 240L145 240Z" fill="${skin}"/><path d="M130 345L230 345L222 431L185 431L180 377L171 431L134 431Z" fill="${skin}" stroke="#9a6b5a" stroke-width="4"/><path d="M137 228L157 218Q180 234 203 218L223 228L239 251L222 266L213 252L221 346Q180 357 139 346L147 252L138 266L121 251Z" fill="#efb5c6" stroke="#c67f97" stroke-width="4" stroke-linejoin="round"/><path d="M139 348Q180 361 221 348L215 387Q180 396 145 387Z" fill="#9bbbe9" stroke="#718eae" stroke-width="4"/><path d="M119 447Q137 454 160 447L167 459Q153 474 112 464ZM200 447Q222 454 241 447L248 459Q235 474 195 464Z" fill="#fff7e9" stroke="#9a6b5a" stroke-width="4"/><path d="M123 458L160 458M200 458L238 458" stroke="#ed9eb3" stroke-width="4" stroke-linecap="round"/><ellipse cx="180" cy="137" rx="79" ry="91" fill="${skin}" stroke="#9a6b5a" stroke-width="4"/>${face}`;
+    const baseHair = includeBaseHair ? `<path d="M111 145Q91 46 179 42Q270 42 250 157L237 224L218 205L221 101Q179 121 139 101L136 210L116 226Z" fill="${hair}" stroke="#543c38" stroke-width="5"/>` : '';
+    return `${ears}${baseHair}<path d="M137 208L151 208L151 234L209 234L209 208L223 208L237 238L261 255L239 285L224 268L231 353L129 353L136 268L121 285L99 255L123 238Z" fill="${skin}" stroke="#9a6b5a" stroke-width="4" stroke-linejoin="round"/><path d="M151 208Q180 220 209 208L215 240L145 240Z" fill="${skin}"/><path d="M130 345L230 345L222 431L185 431L180 377L171 431L134 431Z" fill="${skin}" stroke="#9a6b5a" stroke-width="4"/><path d="M137 228L157 218Q180 234 203 218L223 228L239 251L222 266L213 252L221 346Q180 357 139 346L147 252L138 266L121 251Z" fill="#efb5c6" stroke="#c67f97" stroke-width="4" stroke-linejoin="round"/><path d="M139 348Q180 361 221 348L215 387Q180 396 145 387Z" fill="#9bbbe9" stroke="#718eae" stroke-width="4"/><path d="M119 447Q137 454 160 447L167 459Q153 474 112 464ZM200 447Q222 454 241 447L248 459Q235 474 195 464Z" fill="#fff7e9" stroke="#9a6b5a" stroke-width="4"/><path d="M123 458L160 458M200 458L238 458" stroke="#ed9eb3" stroke-width="4" stroke-linecap="round"/><ellipse cx="180" cy="137" rx="79" ry="91" fill="${skin}" stroke="#9a6b5a" stroke-width="4"/>${face}`;
   }
 
   function avatarSvg(snapshot = state) {
@@ -116,12 +135,12 @@
     const selections = Object.values(safeOutfit).map(id => itemById[id]).filter(Boolean).sort((a, b) => (data.layers[a.category] || a.layer) - (data.layers[b.category] || b.layer));
     const hair = selections.find(item => item.category === 'hair');
     let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${ART_WIDTH} ${ART_HEIGHT}" role="img" aria-label="${esc(person.nameKo)} 캐릭터">`;
-    if (hair) svg += `<g data-layer="hairBack">${svgItem(hair, 'back')}</g>`;
-    svg += `<g data-layer="body">${bodySvg(person)}</g>`;
+    if (hair) svg += `<g data-layer="hairBack">${svgItem(hair, 'back', person)}</g>`;
+    svg += `<g data-layer="body">${bodySvg(person, !hair)}</g>`;
     for (const item of selections) {
-      if (item.category === 'hair') svg += `<g data-layer="hair">${svgItem(item)}</g>`;
-      else if (item.category === 'accessory') svg += `<g data-layer="accessory">${svgItem(item)}</g>`;
-      else svg += `<g data-layer="${esc(item.category)}">${svgItem(item)}</g>`;
+      if (item.category === 'hair') svg += `<g data-layer="hair">${svgItem(item, '', person)}</g>`;
+      else if (item.category === 'accessory') svg += `<g data-layer="accessory">${svgItem(item, '', person)}</g>`;
+      else svg += `<g data-layer="${esc(item.category)}">${svgItem(item, '', person)}</g>`;
     }
     return `${svg}</svg>`;
   }
@@ -186,7 +205,7 @@
   function doSparkle() {
     const sparks = ['💖','⭐','✨','🌸','🌈'];
     state.sparkle = sparks[Math.floor(Math.random() * sparks.length)];
-    setTimeout(() => { state.sparkle = ''; if (state.view === 'editor') render(); }, 700);
+    setTimeout(() => { state.sparkle = ''; $('.sparkle-burst', app)?.remove(); }, 700);
   }
   function continueDressing() { state.view = 'editor'; state.sparkle = ''; render(); }
   function home() { state.view = 'home'; state.sparkle = ''; persist(); render(); }
@@ -224,8 +243,9 @@
   }
   function itemPreview(item) {
     const box = { hair:'55 0 250 250', hat:'100 0 160 145', top:'95 155 170 120', dress:'55 190 250 220', skirt:'95 235 170 120', pants:'100 280 160 190', shoes:'110 405 150 75', headAccessory:'90 0 180 120', accessory:'105 100 150 175', bag:'60 145 110 190', toy:'200 275 100 125' }[item.category];
-    const back = item.category === 'hair' ? svgItem(item, 'back') : '';
-    return `<svg viewBox="${box}" aria-hidden="true">${back}${svgItem(item)}</svg>`;
+    const person = charById.girl01;
+    const back = item.category === 'hair' ? svgItem(item, 'back', person) : '';
+    return `<svg viewBox="${box}" aria-hidden="true">${back}${svgItem(item, '', person)}</svg>`;
   }
   function renderEditor() {
     const currentCategory = data.categories.find(category => category.id === state.categoryId);
@@ -345,7 +365,7 @@
     pushUndo();
     state.outfit = rules.buildRandomOutfit(data.items, itemById, Math.random, unlocked);
     state.view = 'editor'; persist(); play('random'); state.sparkle = '✨'; render();
-    setTimeout(() => { state.sparkle = ''; if (state.view === 'editor') render(); }, 500);
+    setTimeout(() => { state.sparkle = ''; $('.sparkle-burst', app)?.remove(); }, 500);
   }
   function categoryName(id) { return id === 'background' ? '배경' : data.categories.find(category => category.id === id)?.name || ''; }
 

@@ -76,7 +76,7 @@ button:focus-visible { outline: 4px solid #56aeb0; outline-offset: 2px; }
 .scene-room .stage-floor { background: #eccaad; }
 .scene-birthday .stage-floor { background: #f1c3d4; }
 .doll-wrap { position: absolute; z-index: 2; inset: 0 0 1%; display: flex; align-items: center; justify-content: center; pointer-events: none; }
-.doll-wrap svg { width: min(94%, 480px); height: auto; max-height: 100%; aspect-ratio: 3 / 4; filter: drop-shadow(0 7px 2px #76574325); overflow: visible; }
+.doll-wrap svg { width: auto; height: min(92%, 640px); max-width: 94%; aspect-ratio: 3 / 4; filter: drop-shadow(0 7px 2px #76574325); overflow: visible; }
 .stage-caption { position: absolute; z-index: 3; right: 9px; bottom: 8px; max-width: 60%; padding: 7px 12px; border-radius: 16px; background: #fff9; font-size: 13px; font-weight: 800; }
 .sparkle-burst { position: absolute; z-index: 4; top: 28%; left: 17%; transform: translate(-50%, -50%); animation: pop .65s ease-out forwards; font-size: 58px; pointer-events: none; }
 .rail-shell { display: grid; grid-template-columns: 48px minmax(0, 1fr) 48px; align-items: center; gap: 4px; min-width: 0; }
@@ -97,7 +97,7 @@ button:focus-visible { outline: 4px solid #56aeb0; outline-offset: 2px; }
 .item-card.recommended { outline: 2px dashed #e8bd4f; outline-offset: -5px; }
 .recommend-badge { position: absolute; bottom: 7px; left: 6px; padding: 2px 5px; border-radius: 8px; background: #fff0b8; color: #775d2d; font-size: 9px; font-weight: 900; line-height: 1.2; }
 .item-picture { display: grid; place-items: center; width: 68px; height: 68px; overflow: hidden; border-radius: 17px; background: color-mix(in srgb, var(--swatch), white 76%); font-size: 34px; }
-.item-picture svg { width: 100%; height: 100%; overflow: hidden; }
+.item-picture svg { display: block; width: 100%; height: 100%; overflow: hidden; }
 .item-card strong { width: 100%; overflow: hidden; font-size: 10px; text-align: center; text-overflow: ellipsis; white-space: nowrap; }
 .item-card i { position: absolute; top: -5px; right: -4px; display: grid; place-items: center; width: 25px; height: 25px; border-radius: 50%; background: #83c986; color: white; font-size: 15px; font-style: normal; }
 .item-card.locked { opacity: .75; }
@@ -117,7 +117,7 @@ button:focus-visible { outline: 4px solid #56aeb0; outline-offset: 2px; }
 .finish-page .simple-header { flex: 0 0 70px; }
 .finish-stage { position: relative; flex: 1 1 auto; min-height: 0; overflow: hidden; border: 3px solid #fff; border-radius: 28px; box-shadow: 0 4px 0 #e7cebb; }
 .finish-stage .doll-wrap { bottom: 25%; }
-.finish-stage .doll-wrap svg { width: min(94%, 480px); }
+.finish-stage .doll-wrap svg { height: min(84%, 560px); }
 .celebrate { animation: dance .9s ease-in-out infinite; transform-origin: 50% 75%; }
 .finish-card { position: absolute; z-index: 4; right: 10px; bottom: 10px; left: 10px; display: grid; gap: 4px; padding: 11px; border-radius: 18px; background: #fffaf0eF; text-align: center; }
 .finish-card strong { font-size: 17px; }
@@ -163,6 +163,11 @@ button:focus-visible { outline: 4px solid #56aeb0; outline-offset: 2px; }
   .home-title h1 { font-size: 38px; }
   .big-button { min-height: 68px; }
   .home-bottom { margin-top: 7px; }
+}
+@media (max-height: 500px) {
+  .editor-page { height: 100%; min-height: 0; grid-template-rows: auto minmax(130px, 38vh) 66px 105px 72px; overflow-y: auto; }
+  .editor-stage { min-height: 130px; }
+  .editor-actions { padding-bottom: max(5px, env(safe-area-inset-bottom)); }
 }
 @media (min-width: 700px) {
   body { background: #f2e5d4; }

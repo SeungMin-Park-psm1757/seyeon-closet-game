@@ -38,10 +38,11 @@ assert.equal(outfit.pants, undefined);
 assert.equal(outfit.dress, 'dress_05');
 assert.equal(rules.hasConflict(outfit), false);
 
-const shoesOnce = rules.applyItemSelection(outfit, 'shoes_01', itemById);
-const shoesTwice = rules.applyItemSelection(shoesOnce, 'shoes_01', itemById);
-assert.equal(shoesTwice.shoes, undefined, 'shoes may be removed');
-const hairAgain = rules.applyItemSelection(shoesTwice, 'hair_01', itemById);
+const shoesRemoved = rules.applyItemSelection(outfit, 'shoes_01', itemById);
+assert.equal(shoesRemoved.shoes, undefined, 'shoes may be removed');
+const shoesRestored = rules.applyItemSelection(shoesRemoved, 'shoes_01', itemById);
+assert.equal(shoesRestored.shoes, 'shoes_01', 'shoes may be selected again');
+const hairAgain = rules.applyItemSelection(shoesRestored, 'hair_01', itemById);
 assert.equal(hairAgain.hair, 'hair_01', 'hair may not be removed');
 
 let seed = 0x5eed1234;

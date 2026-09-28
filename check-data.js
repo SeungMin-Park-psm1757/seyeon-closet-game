@@ -19,6 +19,7 @@ unique(categories.map(category => category.id), 'category');
 unique(items.map(item => item.id), 'item');
 unique(characters.map(character => character.id), 'character');
 unique(backgrounds.map(background => background.id), 'background');
+unique(themes.map(theme => theme.id), 'theme');
 
 const categoryIds = new Set(categories.map(category => category.id));
 const itemIds = new Set(items.map(item => item.id));
@@ -30,6 +31,8 @@ assert.ok(items.every(item => item.lockedAt == null), 'the toddler build must no
 
 assert.ok(themes.every(theme => backgroundIds.has(theme.background)), 'every theme must reference an existing background');
 assert.ok(themes.every(theme => itemIds.has(theme.outfit)), 'every theme must reference an existing outfit item');
+assert.ok(themes.every(theme => typeof theme.title === 'string' && theme.title.trim().length > 0), 'every theme must have a title');
+assert.ok(themes.every(theme => typeof theme.icon === 'string' && theme.icon.trim().length > 0), 'every theme must have an icon');
 
 const validateRegistry = (entries, validIds, label) => {
   for (const [id, relativePath] of Object.entries(entries)) {

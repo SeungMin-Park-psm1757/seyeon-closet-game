@@ -58,6 +58,7 @@ button:focus-visible { outline: 4px solid #56aeb0; outline-offset: 2px; }
 .undo-button:disabled { opacity: .5; }
 .editor-stage { position: relative; min-height: 0; overflow: hidden; border: 3px solid #fff; border-radius: 31px; background: var(--scene, #ffe7ce); box-shadow: 0 4px 0 #e7cebb; }
 .stage-scene { position: absolute; inset: 0; overflow: hidden; background-color: var(--scene); background-position: center; background-size: cover; }
+.stage-scene.has-art::before, .stage-scene.has-art .scene-deco, .stage-scene.has-art .stage-floor { display: none; }
 .stage-scene::before { position: absolute; top: 14%; left: 18%; width: 56px; height: 56px; border-radius: 50%; background: #fff6; content: ""; }
 .scene-deco { position: absolute; z-index: 1; font-size: clamp(28px, 9vw, 45px); filter: drop-shadow(0 3px 1px #936b4430); }
 .deco-one { top: 9%; left: 7%; animation: bob 3.2s ease-in-out infinite; }

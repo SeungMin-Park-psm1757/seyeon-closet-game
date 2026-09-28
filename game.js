@@ -100,7 +100,7 @@
     const bg = background(), custom = window.ASSETS.backgrounds[bg.id];
     const style = `--scene:${bg.color}${custom ? `;background-image:url('${esc(custom)}')` : ''}`;
     const scenes = { room:['🪟','🪴','🧸'], playground:['☁️','🌳','🛝'], garden:['🦋','🌼','🌷'], park:['☁️','🌳','🌿'], beach:['☀️','🐚','🌊'], castle:['✨','🏰','☁️'], birthday:['🎈','🎉','🎈'], snow:['❄️','🏠','❄️'], school:['☁️','🏫','🌳'], zoo:['🌴','🦒','🌿'] }[bg.scenery];
-    return `<div class="stage-scene scene-${bg.scenery}" style="${style}"><span class="scene-deco deco-one">${scenes[0]}</span><span class="scene-deco deco-two">${scenes[1]}</span><span class="scene-deco deco-three">${scenes[2]}</span><div class="stage-floor"></div><div class="doll-wrap ${state.view === 'finish' ? 'celebrate' : ''}">${avatarSvg()}</div>${state.sparkle ? `<span class="sparkle-burst">${state.sparkle}</span>` : ''}</div>`;
+    return `<div class="stage-scene scene-${bg.scenery} ${custom ? 'has-art' : ''}" style="${style}"><span class="scene-deco deco-one">${scenes[0]}</span><span class="scene-deco deco-two">${scenes[1]}</span><span class="scene-deco deco-three">${scenes[2]}</span><div class="stage-floor"></div><div class="doll-wrap ${state.view === 'finish' ? 'celebrate' : ''}">${avatarSvg()}</div>${state.sparkle ? `<span class="sparkle-burst">${state.sparkle}</span>` : ''}</div>`;
   }
 
   function play(type) {

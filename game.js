@@ -1,6 +1,7 @@
 (() => {
   'use strict';
   const data = window.GAME_DATA;
+  const ART_WIDTH = 360, ART_HEIGHT = 480;
   const $ = (selector, root = document) => root.querySelector(selector);
   const app = $('#app');
   const key = 'seyeon-closet-save';
@@ -33,11 +34,14 @@
     if (state.history.length > 10) state.history.shift();
   }
   function esc(value) { return String(value).replace(/[&<>"']/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[char]); }
+  function runtimeAsset(path) {
+    return path.replace(/^assets\/custom\/(.+)\.png$/i, 'assets/runtime/$1.webp');
+  }
 
   function svgItem(item, part = '') {
     if (!item) return '';
     const custom = window.ASSETS.items[item.id] || item.asset;
-    if (custom) return part === 'back' ? '' : `<image href="${esc(custom)}" x="0" y="0" width="360" height="500" preserveAspectRatio="none"/>`;
+    if (custom) return part === 'back' ? '' : `<image href="${esc(runtimeAsset(custom))}" x="0" y="0" width="${ART_WIDTH}" height="${ART_HEIGHT}" preserveAspectRatio="xMidYMid meet"/>`;
     const c = item.color, v = item.variant, detail = ['✿','♥','★','✦'][v % 4];
     switch (item.category) {
       case 'hair':
@@ -65,7 +69,7 @@
   function bodySvg(person) {
     const skin = person.skin, hair = person.hair;
     const custom = window.ASSETS.characters[person.id];
-    if (custom) return `<image href="${esc(custom)}" x="0" y="0" width="360" height="500" preserveAspectRatio="none"/>`;
+    if (custom) return `<image href="${esc(runtimeAsset(custom))}" x="0" y="0" width="${ART_WIDTH}" height="${ART_HEIGHT}" preserveAspectRatio="xMidYMid meet"/>`;
     const ears = person.kind === 'rabbit'
       ? `<path d="M145 89Q108 20 129 14Q157 13 168 88M190 88Q207 11 233 16Q252 25 214 103" fill="${skin}" stroke="#8c675c" stroke-width="5"/><path d="M139 73Q127 35 134 31M207 76Q223 32 232 32" stroke="#ec9aa8" stroke-width="9" stroke-linecap="round"/>`
       : person.kind === 'bear' ? `<circle cx="119" cy="76" r="31" fill="${skin}" stroke="#805747" stroke-width="5"/><circle cx="241" cy="76" r="31" fill="${skin}" stroke="#805747" stroke-width="5"/><circle cx="119" cy="76" r="15" fill="#d99b7e"/><circle cx="241" cy="76" r="15" fill="#d99b7e"/>` : '';
@@ -79,7 +83,7 @@
     const person = charById[snapshot.characterId] || character();
     const selections = Object.values(snapshot.outfit || {}).map(id => itemById[id]).filter(Boolean).sort((a, b) => (data.layers[a.category] || a.layer) - (data.layers[b.category] || b.layer));
     const hair = selections.find(item => item.category === 'hair');
-    let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 500" role="img" aria-label="${esc(person.nameKo)} 캐릭터">`;
+    let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${ART_WIDTH} ${ART_HEIGHT}" role="img" aria-label="${esc(person.nameKo)} 캐릭터">`;
     if (hair) svg += `<g data-layer="hairBack">${svgItem(hair, 'back')}</g>`;
     svg += `<g data-layer="body">${bodySvg(person)}</g>`;
     for (const item of selections) {
@@ -94,11 +98,11 @@
     const bg = backgroundById[photo.backgroundId] || data.backgrounds[0], custom = window.ASSETS.backgrounds[bg.id];
     const person = charById[photo.characterId] || data.characters[0];
     const avatar = avatarSvg(photo).replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '');
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 360" role="img" aria-label="${esc(person.nameKo)}의 코디"><rect width="500" height="360" fill="${bg.color}"/>${custom ? `<image href="${esc(custom)}" width="500" height="360" preserveAspectRatio="xMidYMid slice"/>` : ''}<circle cx="74" cy="72" r="32" fill="#fff7"/><path d="M0 260Q125 230 250 258T500 250V360H0Z" fill="#ffffff4d"/><text x="42" y="84" font-size="35">${bg.icon}</text><g transform="translate(120 8) scale(.72)">${avatar}</g></svg>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 360" role="img" aria-label="${esc(person.nameKo)}의 코디"><rect width="500" height="360" fill="${bg.color}"/>${custom ? `<image href="${esc(runtimeAsset(custom))}" width="500" height="360" preserveAspectRatio="xMidYMid slice"/>` : ''}<circle cx="74" cy="72" r="32" fill="#fff7"/><path d="M0 260Q125 230 250 258T500 250V360H0Z" fill="#ffffff4d"/><text x="42" y="84" font-size="35">${bg.icon}</text><g transform="translate(120 8) scale(.72)">${avatar}</g></svg>`;
   }
   function stageArt() {
     const bg = background(), custom = window.ASSETS.backgrounds[bg.id];
-    const style = `--scene:${bg.color}${custom ? `;background-image:url('${esc(custom)}')` : ''}`;
+    const style = `--scene:${bg.color}${custom ? `;background-image:url('${esc(runtimeAsset(custom))}')` : ''}`;
     const scenes = { room:['🪟','🪴','🧸'], playground:['☁️','🌳','🛝'], garden:['🦋','🌼','🌷'], park:['☁️','🌳','🌿'], beach:['☀️','🐚','🌊'], castle:['✨','🏰','☁️'], birthday:['🎈','🎉','🎈'], snow:['❄️','🏠','❄️'], school:['☁️','🏫','🌳'], zoo:['🌴','🦒','🌿'] }[bg.scenery];
     return `<div class="stage-scene scene-${bg.scenery} ${custom ? 'has-art' : ''}" style="${style}"><span class="scene-deco deco-one">${scenes[0]}</span><span class="scene-deco deco-two">${scenes[1]}</span><span class="scene-deco deco-three">${scenes[2]}</span><div class="stage-floor"></div><div class="doll-wrap ${state.view === 'finish' ? 'celebrate' : ''}">${avatarSvg()}</div>${state.sparkle ? `<span class="sparkle-burst">${state.sparkle}</span>` : ''}</div>`;
   }
@@ -178,7 +182,7 @@
     return `<button class="item-card ${chosen ? 'chosen' : ''} ${recommended ? 'recommended' : ''} ${locked ? 'locked' : ''}" data-item="${item.id}" ${locked ? `aria-label="꾸미기 ${item.lockedAt}번 하면 열려요"` : ''}><span class="item-picture" style="--swatch:${item.color}">${itemPreview(item)}</span><strong>${locked ? '🔒' : esc(item.nameKo)}</strong>${chosen || recommended ? `<i>${chosen ? '✓' : '⭐'}</i>` : ''}</button>`;
   }
   function itemPreview(item) {
-    const box = { hair:'80 25 200 190', hat:'110 40 140 90', top:'100 195 160 165', dress:'90 190 180 210', skirt:'95 295 170 115', pants:'115 290 130 155', shoes:'100 420 165 60', headAccessory:'135 42 90 65', bag:'202 250 90 125', accessory:'115 110 130 150', toy:'82 240 100 100' }[item.category];
+    const box = { hair:'55 0 250 250', hat:'100 0 160 145', top:'90 195 180 170', dress:'55 190 250 220', skirt:'80 285 200 135', pants:'100 280 160 190', shoes:'95 400 180 80', headAccessory:'120 20 120 100', bag:'195 235 125 140', accessory:'105 100 150 175', toy:'75 235 120 130' }[item.category];
     const back = item.category === 'hair' ? svgItem(item, 'back') : '';
     return `<svg viewBox="${box}" aria-hidden="true">${back}${svgItem(item)}</svg>`;
   }

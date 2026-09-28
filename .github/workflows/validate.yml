@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - codex/art-direction-v1
+      - codex/art-direction-v2
       - feature/kids-dressup-game-v1
       - main
   pull_request:

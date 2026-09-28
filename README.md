@@ -6,11 +6,13 @@
 
 저장소에서 `python -m http.server 8765`를 실행하고 `http://127.0.0.1:8765/`를 엽니다. PWA 설치와 오프라인 캐시는 HTTPS 또는 localhost에서 동작합니다.
 
-카탈로그 확인: `node check-data.js`.
+런타임 아트 재생성: `python scripts/convert-assets.py` (Pillow WebP 지원 필요; 기존 런타임 파일을 PNG 원본에서 다시 생성합니다).
+
+검증: `node check-data.js`, `node audit-assets.js`.
 
 ## 자산 교체
 
-투명 배경 PNG/SVG를 `assets/custom/` 아래에 넣고 `assets/assetRegistry.js`에서 데이터 ID에 경로를 연결하면 캐릭터나 의상을 교체할 수 있습니다. 현재 실제 아트 마스터는 **1086×1448(3:4)** 전신 캔버스로 통일되어 있으며, 캐릭터·헤어·의상·신발은 같은 캔버스와 좌표를 유지해야 정확히 겹칩니다. 런타임의 기존 360×500 논리 캔버스와 3:4 원본 사이의 비율 정규화는 다음 UI/아트 고도화 단계에서 처리합니다.
+투명 PNG 원본을 `assets/custom/` 아래에 넣고 `assets/assetRegistry.js`에서 데이터 ID에 경로를 연결하면 캐릭터나 의상을 교체할 수 있습니다. 마스터는 **1086×1448(3:4)** 전신 캔버스이며, 게임은 이를 360×480 viewBox에 그대로 맞춰 표시합니다. `python scripts/convert-assets.py`가 픽셀 손실 없는 WebP 런타임 사본을 `assets/runtime/`에 만듭니다. 원본 PNG는 변환 후에도 유지됩니다.
 
 현재 제작 시안은 `girl01` 몸체, `hair_01`, `dress_01`~`dress_12`, `shoes_01`, `room` 배경입니다. 나머지 캐릭터와 의상은 기존 SVG 그림을 사용합니다. 사진첩은 이미지 파일 대신 코디 ID와 배경 ID를 저장하고 현재 자산으로 카드를 다시 그립니다.
 

@@ -54,4 +54,16 @@ if (missingAlpha.length) {
 const totalBytes = [...wearables, ...backgrounds].reduce((sum, asset) => sum + asset.bytes, 0);
 console.log(`Registered custom art total: ${(totalBytes / 1024 / 1024).toFixed(2)} MiB`);
 
+const runtimeAssets = [...wearableEntries, ...backgroundEntries].map(({ id, file }) => {
+  const runtimePath = file.replace(/^assets\/custom\//, 'assets/runtime/').replace(/\.png$/i, '.webp');
+  const absolutePath = path.join(__dirname, runtimePath);
+  assert.ok(fs.existsSync(absolutePath), `missing runtime WebP for ${id}: ${runtimePath}`);
+  const buffer = fs.readFileSync(absolutePath);
+  assert.equal(buffer.toString('ascii', 0, 4), 'RIFF', `not a WebP: ${runtimePath}`);
+  assert.equal(buffer.toString('ascii', 8, 12), 'WEBP', `not a WebP: ${runtimePath}`);
+  return buffer.length;
+});
+const runtimeBytes = runtimeAssets.reduce((sum, bytes) => sum + bytes, 0);
+console.log(`Runtime WebP assets: ${runtimeAssets.length} files, ${(runtimeBytes / 1024 / 1024).toFixed(2)} MiB`);
+
 process.exitCode = mismatchedCanvas.length || missingAlpha.length ? 2 : 0;

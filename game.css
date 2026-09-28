@@ -71,7 +71,7 @@ button:focus-visible { outline: 4px solid #56aeb0; outline-offset: 2px; }
 .scene-room .stage-floor { background: #eccaad; }
 .scene-birthday .stage-floor { background: #f1c3d4; }
 .doll-wrap { position: absolute; z-index: 2; inset: 0 0 1%; display: flex; align-items: center; justify-content: center; pointer-events: none; }
-.doll-wrap svg { width: min(94%, 360px); height: 100%; max-height: 500px; filter: drop-shadow(0 7px 2px #76574325); overflow: visible; }
+.doll-wrap svg { width: min(94%, 480px); height: auto; max-height: 100%; aspect-ratio: 3 / 4; filter: drop-shadow(0 7px 2px #76574325); overflow: visible; }
 .stage-caption { position: absolute; z-index: 3; right: 9px; bottom: 8px; max-width: 60%; padding: 7px 12px; border-radius: 16px; background: #fff9; font-size: 13px; font-weight: 800; }
 .sparkle-burst { position: absolute; z-index: 4; top: 28%; left: 17%; transform: translate(-50%, -50%); animation: pop .65s ease-out forwards; font-size: 58px; pointer-events: none; }
 .category-rail { display: flex; gap: 7px; overflow-x: auto; align-items: center; padding: 5px 1px; overscroll-behavior-x: contain; scrollbar-width: none; }
@@ -81,10 +81,10 @@ button:focus-visible { outline: 4px solid #56aeb0; outline-offset: 2px; }
 .category-button small { max-width: 68px; overflow: hidden; font-size: 11px; font-weight: 800; text-overflow: ellipsis; white-space: nowrap; }
 .category-button.active { border-color: #e68da7; background: #ffe1e9; box-shadow: 0 3px 0 #d889a0; }
 .item-rail { display: flex; gap: 9px; min-width: 0; overflow-x: auto; align-items: stretch; padding: 6px 1px 8px; overscroll-behavior-x: contain; scrollbar-width: none; }
-.item-card { position: relative; flex: 0 0 90px; display: grid; grid-template-rows: 66px auto; justify-items: center; align-content: center; gap: 2px; min-width: 0; min-height: 101px; padding: 4px; border: 2px solid #f1ddca; border-radius: 18px; background: #fffdf7; box-shadow: 0 3px 0 #e8d2bd; }
+.item-card { position: relative; flex: 0 0 90px; display: grid; grid-template-rows: 70px auto; justify-items: center; align-content: center; gap: 2px; min-width: 0; min-height: 105px; padding: 4px; border: 2px solid #f1ddca; border-radius: 18px; background: #fffdf7; box-shadow: 0 3px 0 #e8d2bd; }
 .item-card.chosen { border-color: #e486a2; background: #fff0f4; }
 .item-card.recommended { outline: 2px dashed #e8bd4f; outline-offset: -5px; }
-.item-picture { display: grid; place-items: center; width: 62px; height: 62px; border-radius: 17px; background: color-mix(in srgb, var(--swatch), white 76%); font-size: 34px; }
+.item-picture { display: grid; place-items: center; width: 68px; height: 68px; border-radius: 17px; background: color-mix(in srgb, var(--swatch), white 76%); font-size: 34px; }
 .item-picture svg { width: 100%; height: 100%; overflow: visible; }
 .item-card strong { width: 100%; overflow: hidden; font-size: 10px; text-align: center; text-overflow: ellipsis; white-space: nowrap; }
 .item-card i { position: absolute; top: -5px; right: -4px; display: grid; place-items: center; width: 25px; height: 25px; border-radius: 50%; background: #83c986; color: white; font-size: 15px; font-style: normal; }
@@ -104,7 +104,7 @@ button:focus-visible { outline: 4px solid #56aeb0; outline-offset: 2px; }
 .finish-page .simple-header { flex: 0 0 70px; }
 .finish-stage { position: relative; flex: 1 1 auto; min-height: 0; overflow: hidden; border: 3px solid #fff; border-radius: 28px; box-shadow: 0 4px 0 #e7cebb; }
 .finish-stage .doll-wrap { bottom: 25%; }
-.finish-stage .doll-wrap svg { width: min(94%, 360px); }
+.finish-stage .doll-wrap svg { width: min(94%, 480px); }
 .celebrate { animation: dance .9s ease-in-out infinite; transform-origin: 50% 75%; }
 .finish-card { position: absolute; z-index: 4; right: 10px; bottom: 10px; left: 10px; display: grid; gap: 4px; padding: 11px; border-radius: 18px; background: #fffaf0eF; text-align: center; }
 .finish-card strong { font-size: 17px; }
@@ -135,7 +135,7 @@ button:focus-visible { outline: 4px solid #56aeb0; outline-offset: 2px; }
 @keyframes dance { 35% { transform: translateY(-23px) rotate(-8deg); } 70% { transform: translateY(-13px) rotate(7deg); } }
 
 @media (max-height: 740px) {
-  .editor-page { grid-template-rows: auto minmax(175px, 1fr) 66px 107px 72px; }
+  .editor-page { grid-template-rows: auto minmax(175px, 1fr) 66px 115px 72px; }
   .editor-header { min-height: 64px; }
   .category-button { height: 60px; }
   .item-card { grid-template-rows: 57px auto; min-height: 91px; }

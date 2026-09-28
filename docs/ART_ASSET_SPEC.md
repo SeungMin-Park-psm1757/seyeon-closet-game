@@ -1,12 +1,13 @@
 # Art Asset Specification
 
-This document is the current source-of-truth for custom art on `codex/art-direction-v1`.
+This document is the current source-of-truth for custom art on `codex/art-direction-v2`.
 
 ## 1. Wearable master canvas
 
 - Source canvas: **1086 × 1448 px**
 - Aspect ratio: **3:4**
-- Format while authoring: transparent PNG
+- Format while authoring: transparent PNG master
+- Runtime format: lossless WebP generated from the PNG master
 - Character body, hair, dresses, tops, bottoms, shoes, hats, accessories, bags, and props must use the exact same full-body canvas.
 - Do not crop each item to its visible pixels. Empty transparent margins are part of the alignment contract.
 - Do not move the shoulder, waist, hand, or foot anchors independently between files.
@@ -19,20 +20,22 @@ Backgrounds do not share the wearable canvas. They are rendered as scene art wit
 
 Keep important visual subjects away from the extreme edges because phone aspect ratios vary.
 
-## 3. Runtime mapping issue to resolve before mass production
+## 3. Runtime mapping
 
-The legacy game SVG uses a logical 360 × 500 canvas while the verified art master is 3:4. Custom PNGs are currently inserted with `preserveAspectRatio="none"`.
+The avatar now uses a **360 × 480** logical canvas, exactly 3:4. Custom art uses the full canvas with `preserveAspectRatio="xMidYMid meet"`; no crop or stretch is applied.
 
-That maps 1086 × 1448 (0.75) into 360 × 500 (0.72), causing about **4% horizontal compression**. All current wearable files remain mutually aligned because they share the same source canvas, but their proportions are slightly distorted at runtime.
+Placeholder SVG paths retain their existing coordinates. Their lowest point remains inside the 480-unit viewBox, preserving the current anchors. The shared avatar renderer supplies custom and placeholder art in the editor, completion screen, home preview, item thumbnails, and album cards.
 
-Before producing the rest of the catalog, the runtime should be normalized to the 3:4 master without breaking placeholder fallback art, previews, finish view, or album rendering.
+Item thumbnails keep the full-canvas source and use category-specific viewBoxes to make the garment or accessory larger while retaining its complete silhouette.
 
 ## 4. File and registry rules
 
 - Character: `assets/custom/characters/<id>.png`
 - Wearable/item: `assets/custom/clothes/<id>.png`
 - Background: `assets/custom/backgrounds/<id>.png`
-- Register every custom file in `assets/assetRegistry.js`.
+- Register each PNG master in `assets/assetRegistry.js`.
+- `game.js` maps registered `assets/custom/*.png` files to generated `assets/runtime/*.webp` files.
+- Regenerate runtime files with `python scripts/convert-assets.py`. It requires Pillow with WebP support, verifies pixel-exact RGBA round-trips, writes files atomically, and regenerates/overwrites existing runtime copies from their PNG masters.
 - Registry IDs must already exist in `data.js`.
 - The toddler build intentionally has no outfit locks.
 
@@ -51,22 +54,24 @@ node audit-assets.js
 
 GitHub Actions runs the same checks on the active development branches.
 
-`audit-assets.js` verifies:
+`check-data.js` and `audit-assets.js` verify:
+- duplicate IDs within registry sections;
 - registered PNG files exist;
+- every registered source has a valid runtime WebP;
 - wearable canvases match the reference character canvas;
 - wearable PNGs contain transparency;
-- current registered art size is reported for capacity planning.
+- source PNG and runtime WebP sizes are reported for capacity planning.
 
 ## 6. Performance policy
 
-Current registered custom art is about **10 MiB for 16 PNG files**. Do not scale directly to the entire catalog at this average file size without an optimization step.
+Current custom art is **10.08 MiB across 16 PNG masters** and **6.91 MiB across 16 lossless WebP runtime files** (31.4% smaller, with pixel-exact RGBA round-trips). Keep PNG masters as editable source.
 
-Recommended pipeline for later implementation:
+The current pipeline:
 
 1. Keep the 1086 × 1448 transparent PNG as the editable/source master.
-2. Produce optimized runtime assets (prefer lossless/high-quality alpha-capable WebP after visual comparison).
-3. Keep source art and runtime art clearly separated if both are retained.
-4. Measure actual load time and memory on the target Android phone before converting the full catalog.
+2. Regenerate its lossless WebP copy under `assets/runtime/`.
+3. Keep source art and runtime art in separate folders.
+4. Measure load time and memory on the target Android phone before scaling this pipeline to the full catalog.
 
 ## 7. Art expansion gate
 

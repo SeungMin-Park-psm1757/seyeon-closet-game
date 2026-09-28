@@ -8,6 +8,7 @@ require('./data.js');
 
 const { categories, items, characters, backgrounds, themes } = window.GAME_DATA;
 const { ASSETS } = window;
+const registrySource = fs.readFileSync(path.join(__dirname, 'assets/assetRegistry.js'), 'utf8');
 
 const unique = (values, label) => {
   assert.equal(new Set(values).size, values.length, `${label} ID must be unique`);
@@ -37,9 +38,20 @@ const validateRegistry = (entries, validIds, label) => {
   }
 };
 
+for (const section of ['characters', 'items', 'backgrounds', 'audio']) {
+  const match = registrySource.match(new RegExp(`^  ${section}: \\{([\\s\\S]*?)^  \\}`, 'm'));
+  assert.ok(match, `missing ${section} registry`);
+  unique([...match[1].matchAll(/^\s{4}([\w$]+)\s*:/gm)].map((entry) => entry[1]), `${section} registry`);
+}
+
 validateRegistry(ASSETS.characters, characterIds, 'character');
 validateRegistry(ASSETS.items, itemIds, 'item');
 validateRegistry(ASSETS.backgrounds, backgroundIds, 'background');
+
+for (const [id, sourcePath] of Object.entries({ ...ASSETS.characters, ...ASSETS.items, ...ASSETS.backgrounds })) {
+  const runtimePath = sourcePath.replace(/^assets\/custom\//, 'assets/runtime/').replace(/\.png$/i, '.webp');
+  assert.ok(fs.existsSync(path.join(__dirname, runtimePath)), `runtime WebP is missing for ${id}: ${runtimePath}`);
+}
 
 for (const [name, relativePath] of Object.entries(ASSETS.audio)) {
   if (relativePath) {

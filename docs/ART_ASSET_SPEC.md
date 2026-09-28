@@ -50,6 +50,7 @@ node --check sw.js
 node --check assets/assetRegistry.js
 node check-data.js
 node audit-assets.js
+python scripts/verify-runtime-assets.py
 ```
 
 GitHub Actions runs the same checks on the active development branches.
@@ -61,6 +62,8 @@ GitHub Actions runs the same checks on the active development branches.
 - wearable canvases match the reference character canvas;
 - wearable PNGs contain transparency;
 - source PNG and runtime WebP sizes are reported for capacity planning.
+
+`scripts/verify-runtime-assets.py` additionally opens every registered PNG master and its committed runtime WebP with Pillow and verifies that their RGBA pixels and dimensions are identical. GitHub Actions runs this check so stale or lossy runtime files cannot pass CI.
 
 ## 6. Performance policy
 

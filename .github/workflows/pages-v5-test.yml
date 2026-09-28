@@ -1,9 +1,6 @@
 name: Deploy V5 test game to GitHub Pages
 
 on:
-  push:
-    branches:
-      - codex/v5-fit-and-scroll-fixes
   workflow_dispatch:
 
 permissions:

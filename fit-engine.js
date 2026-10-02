@@ -11,11 +11,11 @@
   const SLOTS = {
     top: { x: 90, y: 168, width: 180, height: 110, alignX: 0.5, alignY: 0 },
     hat: {
-      cap:     { x: 100, y: 30, width: 160, height: 88, alignX: 0.5, alignY: 1 },
-      sunhat:  { x: 82,  y: 34, width: 196, height: 84, alignX: 0.5, alignY: 1 },
-      beanie:  { x: 108, y: 24, width: 144, height: 100, alignX: 0.5, alignY: 1 },
-      crown:   { x: 122, y: 22, width: 116, height: 88, alignX: 0.5, alignY: 1 },
-      ribbon:  { x: 112, y: 48, width: 136, height: 62, alignX: 0.5, alignY: 1 }
+      cap:     { x: 100, y: 30, width: 160, height: 88, alignX: 0.5, alignY: 1, fitMode: 'width' },
+      sunhat:  { x: 82,  y: 34, width: 196, height: 84, alignX: 0.5, alignY: 1, fitMode: 'width' },
+      beanie:  { x: 108, y: 24, width: 144, height: 100, alignX: 0.5, alignY: 1, fitMode: 'width' },
+      crown:   { x: 122, y: 22, width: 116, height: 88, alignX: 0.5, alignY: 1, fitMode: 'width' },
+      ribbon:  { x: 112, y: 48, width: 136, height: 62, alignX: 0.5, alignY: 1, fitMode: 'width' }
     }
   };
 
@@ -47,7 +47,9 @@
 
   function fitToSlot(source, slot) {
     if (!source || !slot || source.width <= 0 || source.height <= 0) return null;
-    const scale = Math.min(slot.width / source.width, slot.height / source.height);
+    const widthScale = slot.width / source.width;
+    const heightScale = slot.height / source.height;
+    const scale = slot.fitMode === 'width' ? widthScale : Math.min(widthScale, heightScale);
     const width = source.width * scale;
     const height = source.height * scale;
     const targetX = slot.x + (slot.width - width) * (slot.alignX ?? 0.5);

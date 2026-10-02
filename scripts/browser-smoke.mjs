@@ -49,13 +49,18 @@ try {
       width: image.getAttribute('width'), height: image.getAttribute('height'),
       preserve: image.getAttribute('preserveAspectRatio')
     }));
+    const slotFits = [...svg.querySelectorAll('g[data-fit="slot"]')].map(group => ({
+      scale: group.dataset.fitScale,
+      transform: group.getAttribute('transform')
+    }));
     const hatFits = [...new Set(window.GAME_DATA.items.filter(item => item.category === 'hat').map(item => item.hatFit))];
-    return { layers, images, hatFits };
+    return { layers, images, slotFits, hatFits };
   });
-  assert(fit.images.length === 5 && fit.images.every(image => image.x === '0' && image.y === '0' && image.width === '360' && image.height === '480' && image.preserve === 'xMidYMid meet'), 'body and selected wearables must preserve the shared 360x480 canvas');
+  assert(fit.images.length >= 6 && fit.images.every(image => image.x === '0' && image.y === '0' && image.width === '360' && image.height === '480' && image.preserve === 'xMidYMid meet'), 'body and source images must preserve the shared 360x480 canvas');
+  assert(fit.slotFits.length >= 2 && fit.slotFits.every(entry => /^translate\([^)]*\) scale\([0-9.]+\)$/.test(entry.transform) && Number(entry.scale) > 0), `slot-fitted art must use one uniform scale (${JSON.stringify(fit.slotFits)})`);
   assert(fit.layers.indexOf('body') < fit.layers.indexOf('pants') && fit.layers.indexOf('pants') < fit.layers.indexOf('top') && fit.layers.indexOf('shoes') < fit.layers.indexOf('hair') && fit.layers.indexOf('hair') < fit.layers.indexOf('hat'), `wearable layer order must keep clothing below hair and hat (${fit.layers.join(' > ')})`);
-  assert(fit.hatFits.includes('cap') && fit.hatFits.includes('sunhat') && fit.hatFits.includes('beanie') && fit.hatFits.includes('crown'), `hats must use four explicit fits (${fit.hatFits.join(', ')})`);
-  results.push('shared art canvas, garment alignment, four hat fits, and hair/hat layer order PASS');
+  assert(fit.hatFits.includes('cap') && fit.hatFits.includes('sunhat') && fit.hatFits.includes('beanie') && fit.hatFits.includes('crown') && fit.hatFits.includes('ribbon'), `hats must use explicit semantic fits (${fit.hatFits.join(', ')})`);
+  results.push('shared source canvas, uniform slot fitting, semantic hats, and layer order PASS');
   await page.locator('[data-action="reset"]').click();
 
   // Outfit state invariants in the actual browser UI.
@@ -203,47 +208,49 @@ try {
   results.push('PWA service-worker offline reopen PASS');
   await offlineContext.close();
 
-  // Custom Se-yeon art must be filtered from other characters across restore, UI, random, story, and album paths.
-  const compatibilityProbe = await browser.newPage();
-  await compatibilityProbe.goto(baseURL, { waitUntil: 'networkidle' });
-  const customIds = await compatibilityProbe.evaluate(() => window.GAME_DATA.items.filter(item => item.asset).map(item => item.id));
-  const customCategories = await compatibilityProbe.evaluate(() => [...new Set(window.GAME_DATA.items.filter(item => item.asset).map(item => item.category))]);
-  await compatibilityProbe.context().close();
-  for (const characterId of ['girl02', 'bear01', 'rabbit01']) {
+  // V7+ shared preschool-v1 rig: custom wearables should remain selectable for all four characters.
+  for (const characterId of ['girl01', 'girl02', 'bear01', 'rabbit01']) {
     const compatibilityContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
     const compatibilityPage = await compatibilityContext.newPage();
-    await compatibilityPage.addInitScript(() => localStorage.setItem('seyeon-closet-save', JSON.stringify({
-      characterId: 'girl01', mode: 'free', outfit: { hair:'hair_03', dress:'dress_05', top:'top_02', shoes:'shoes_02', headAccessory:'headAccessory_01', bag:'bag_01', toy:'toy_01' },
-      album: [{ characterId:'bear01', outfit:{ hair:'hair_03', dress:'dress_05', shoes:'shoes_02' }, backgroundId:'room', character:'곰돌이', background:'아이 방', items:['무지개 원피스'], date:'26. 9. 29.' }]
-    })));
     await compatibilityPage.goto(baseURL, { waitUntil: 'networkidle' });
     await compatibilityPage.locator('[data-action="characters"]').click();
     await compatibilityPage.locator(`[data-character="${characterId}"]`).click();
-    const restored = await outfit(compatibilityPage);
-    assert(Object.values(restored).every(id => !customIds.includes(id)), `${characterId} must discard incompatible saved art`);
-    for (const category of customCategories) {
+    for (const [category, itemId] of [['hair','hair_02'],['top','top_02'],['shoes','shoes_02']]) {
       await compatibilityPage.locator(`[data-category="${category}"]`).click();
-      for (const id of customIds.filter(id => id.startsWith(`${category}_`))) {
-        assert((await compatibilityPage.locator(`[data-item="${id}"]`).count()) === 0, `${characterId} item rail must hide ${id}`);
-      }
+      assert((await compatibilityPage.locator(`[data-item="${itemId}"]`).count()) === 1, `${characterId} should expose shared ${itemId}`);
+      await compatibilityPage.locator(`[data-item="${itemId}"]`).click();
     }
-    for (let i = 0; i < 4; i += 1) {
-      await compatibilityPage.locator('[data-action="random"]').click();
-      const randomized = await outfit(compatibilityPage);
-      assert(Object.values(randomized).every(id => !customIds.includes(id)), `${characterId} magic outfit ${i} must exclude custom art`);
-    }
-    await compatibilityPage.locator('[data-action="home"]').click();
-    await compatibilityPage.locator('[data-action="stories"]').click();
-    await compatibilityPage.locator('[data-theme="picnic"]').click();
-    await compatibilityPage.locator(`[data-character="${characterId}"]`).click();
-    assert((await compatibilityPage.locator('[data-item="dress_05"]').count()) === 0, `${characterId} story must not offer incompatible recommendations`);
-    assert((await compatibilityPage.locator('.item-card.recommended[data-item^="dress_"]').count()) === 0, `${characterId} story must not recommend incompatible dresses`);
-    await compatibilityPage.locator('[data-action="home"]').click();
-    await compatibilityPage.locator('[data-action="album"]').click();
-    assert((await compatibilityPage.locator('.photo-art image[href*="/clothes/"]').count()) === 0, `${characterId} legacy album art must use compatible rendering`);
+    const shared = await outfit(compatibilityPage);
+    assert(shared.hair === 'hair_02' && shared.top === 'top_02' && shared.shoes === 'shoes_02', `${characterId} should persist shared-rig custom art`);
+    await compatibilityPage.locator('[data-action="random"]').click();
+    const randomized = await outfit(compatibilityPage);
+    assert(randomized.hair && randomized.shoes, `${characterId} magic outfit should remain valid`);
     await compatibilityContext.close();
   }
-  results.push('custom art compatibility: saved data, item rail, magic, story recommendations, and album PASS for 3 characters');
+  results.push('shared preschool-v1 custom art remains selectable for all 4 characters');
+
+  // User-reported V8 visual regression set.
+  const visualContext = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
+  const visualPage = await visualContext.newPage();
+  await openEditor(visualPage);
+  const capture = async (name, selections) => {
+    await visualPage.locator('[data-action="reset"]').click();
+    for (const [category, itemId] of selections) {
+      await visualPage.locator(`[data-category="${category}"]`).click();
+      await visualPage.locator(`[data-item="${itemId}"]`).click();
+    }
+    await visualPage.waitForTimeout(180);
+    await visualPage.screenshot({ path: `${outDir}/${name}.png`, fullPage: true });
+  };
+  await capture('v8-hair04-high-ponytail', [['hair','hair_04']]);
+  await capture('v8-hair06-ponytail', [['hair','hair_06']]);
+  await capture('v8-hair07-curly', [['hair','hair_07']]);
+  await capture('v8-hat01-strawberry', [['hair','hair_02'],['hat','hat_01']]);
+  await capture('v8-hat02-sunhat', [['hair','hair_02'],['hat','hat_02']]);
+  await capture('v8-hat10-ribbon-fallback', [['hair','hair_02'],['hat','hat_10']]);
+  await capture('v8-top02-blouse', [['hair','hair_02'],['top','top_02']]);
+  results.push('V8 user-reported hair/hat/top visual regression screenshots captured');
+  await visualContext.close();
 
   // Story mode: all five themes must open with custom backgrounds and recommendation UI.
   const storyContext = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });

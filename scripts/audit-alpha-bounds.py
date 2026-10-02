@@ -5,11 +5,13 @@ from PIL import Image
 
 ROOT=Path(__file__).resolve().parents[1]
 REG=(ROOT/"assets/assetRegistry.js").read_text(encoding="utf-8")
+THRESHOLD=32
 
 def bbox(path):
     im=Image.open(ROOT/path).convert("RGBA")
     a=im.getchannel("A")
-    b=a.getbbox()
+    strong=a.point(lambda p: 255 if p >= THRESHOLD else 0)
+    b=strong.getbbox()
     if not b:
         return None
     x0,y0,x1,y1=b
@@ -34,6 +36,9 @@ for p in paths:
         meta=bbox(p)
         if meta: rows.append(meta)
 
+print(f"ALPHA_BOUNDS threshold={THRESHOLD}")
+for row in rows:
+    print(f"{Path(row['path']).stem}|bbox={row['bbox']}|norm={row['bboxNorm']}|size={row['size']}|center={row['center']}")
 print("ALPHA_BOUNDS_JSON_BEGIN")
-print(json.dumps(rows, ensure_ascii=False, indent=2))
+print(json.dumps(rows, ensure_ascii=False))
 print("ALPHA_BOUNDS_JSON_END")

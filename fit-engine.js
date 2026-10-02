@@ -11,11 +11,13 @@
   const SLOTS = {
     top: { x: 90, y: 168, width: 180, height: 110, alignX: 0.5, alignY: 0 },
     hat: {
-      cap:     { x: 100, y: 30, width: 160, height: 88, alignX: 0.5, alignY: 1, fitMode: 'width' },
-      sunhat:  { x: 82,  y: 34, width: 196, height: 84, alignX: 0.5, alignY: 1, fitMode: 'width' },
-      beanie:  { x: 108, y: 24, width: 144, height: 100, alignX: 0.5, alignY: 1, fitMode: 'width' },
-      crown:   { x: 122, y: 22, width: 116, height: 88, alignX: 0.5, alignY: 1, fitMode: 'width' },
-      ribbon:  { x: 112, y: 48, width: 136, height: 62, alignX: 0.5, alignY: 1, fitMode: 'width' }
+      // All hat slots share a ~y=108 lower/head-contact line.
+      // fitToSlot uses one scale only: artwork may become smaller, never squashed.
+      cap:     { x: 100, y: 8,  width: 160, height: 100, alignX: 0.5, alignY: 1 },
+      sunhat:  { x: 82,  y: -2, width: 196, height: 110, alignX: 0.5, alignY: 1 },
+      beanie:  { x: 108, y: 8,  width: 144, height: 100, alignX: 0.5, alignY: 1 },
+      crown:   { x: 122, y: 20, width: 116, height: 88,  alignX: 0.5, alignY: 1 },
+      ribbon:  { x: 112, y: 48, width: 136, height: 60,  alignX: 0.5, alignY: 1 }
     }
   };
 

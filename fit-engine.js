@@ -13,11 +13,11 @@
     hat: {
       // All hat slots share a ~y=108 lower/head-contact line.
       // fitToSlot uses one scale only: artwork may become smaller, never squashed.
-      cap:     { x: 100, y: 8,  width: 160, height: 100, alignX: 0.5, alignY: 1 },
-      sunhat:  { x: 82,  y: -2, width: 196, height: 110, alignX: 0.5, alignY: 1 },
-      beanie:  { x: 108, y: 8,  width: 144, height: 100, alignX: 0.5, alignY: 1 },
-      crown:   { x: 122, y: 20, width: 116, height: 88,  alignX: 0.5, alignY: 1 },
-      ribbon:  { x: 112, y: 48, width: 136, height: 60,  alignX: 0.5, alignY: 1 }
+      cap:     { x: 100, y: 0,  width: 160, height: 95, alignX: 0.5, alignY: 1 },
+      sunhat:  { x: 82,  y: 0,  width: 196, height: 95, alignX: 0.5, alignY: 1 },
+      beanie:  { x: 108, y: 5,  width: 144, height: 100, alignX: 0.5, alignY: 1 },
+      crown:   { x: 122, y: 15, width: 116, height: 80, alignX: 0.5, alignY: 1 },
+      ribbon:  { x: 126, y: 42, width: 108, height: 53, alignX: 0.5, alignY: 1 }
     }
   };
 

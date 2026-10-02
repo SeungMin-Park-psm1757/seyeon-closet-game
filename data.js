@@ -22,7 +22,7 @@
       category: category.id,
       nameKo,
       asset,
-      ...(category.id === 'hat' ? { hatFit: ['cap', 'sunhat', 'beanie', 'crown'][i % 4] } : {}),
+      ...(category.id === 'hat' ? { hatFit: ['cap','sunhat','beanie','crown','beanie','sunhat','cap','beanie','cap','ribbon'][i] } : {}),
       tags: ['cute', `color-${i % colors.length}`],
       color: colors[i % colors.length],
       variant: i,

@@ -30,6 +30,7 @@ jobs:
         run: |
           node --check game.js
           node --check data.js
+          node --check fit-engine.js
           node --check outfit-rules.js
           node --check sw.js
           node --check assets/assetRegistry.js
@@ -37,6 +38,8 @@ jobs:
         run: node check-data.js
       - name: Validate outfit state rules
         run: node scripts/test-outfit-rules.js
+      - name: Validate wearable fit engine
+        run: node scripts/test-fit-engine.js
       - name: Validate character art compatibility
         run: node scripts/test-character-compatibility.js
       - name: Audit registered PNG art
@@ -55,7 +58,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: v5-browser-smoke
+          name: v8-browser-smoke
           path: qa/browser-smoke
           if-no-files-found: warn
       - name: Audit alpha bounds

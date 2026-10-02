@@ -22,7 +22,7 @@ def bbox(path):
     }
 
 paths=[]
-for m in re.finditer(r"['"](assets/custom/(?:characters|clothes)/[^'"]+\.png)['"]",REG):
+for m in re.finditer(r"""['"](assets/custom/(?:characters|clothes)/[^'"]+\.png)['"]""", REG):
     p=m.group(1)
     if p not in paths: paths.append(p)
 

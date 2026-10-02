@@ -2,7 +2,9 @@
   'use strict';
   const data = window.GAME_DATA;
   const rules = window.OUTFIT_RULES;
+  const fitEngine = window.FIT_ENGINE;
   if (!rules) throw new Error('OUTFIT_RULES must load before game.js');
+  if (!fitEngine) throw new Error('FIT_ENGINE must load before game.js');
   const ART_WIDTH = 360, ART_HEIGHT = 480;
   const $ = (selector, root = document) => root.querySelector(selector);
   const app = $('#app');
@@ -77,8 +79,15 @@
     if (custom) {
       if (part === 'back') return '';
       const image = `<image href="${esc(runtimeAsset(custom))}" x="0" y="0" width="${ART_WIDTH}" height="${ART_HEIGHT}" preserveAspectRatio="xMidYMid meet"/>`;
+      const slotFit = fitEngine.fitItem(item, window.ASSETS);
+      if (slotFit) {
+        const scale = Number(slotFit.scale.toFixed(6));
+        const tx = Number(slotFit.tx.toFixed(3));
+        const ty = Number(slotFit.ty.toFixed(3));
+        return `<g data-fit="slot" data-fit-scale="${scale}" transform="translate(${tx} ${ty}) scale(${scale})">${image}</g>`;
+      }
       const fit = window.ASSETS.itemTransforms?.[item.id];
-      return fit ? `<g transform="translate(${fit.tx} ${fit.ty}) scale(${fit.sx} ${fit.sy})">${image}</g>` : image;
+      return fit ? `<g data-fit="legacy" transform="translate(${fit.tx} ${fit.ty}) scale(${fit.sx} ${fit.sy})">${image}</g>` : image;
     }
     const c = item.color, v = item.variant, detail = ['✿','♥','★','✦'][v % 4];
     switch (item.category) {
@@ -106,12 +115,18 @@
         const shape = item.hatFit || ['cap', 'sunhat', 'beanie', 'crown'][v % 4];
         const art = shape === 'crown'
           ? `<path d="M132 91L140 55L163 71L180 40L197 71L220 55L228 91Z" fill="${c}" stroke="#805366" stroke-width="4"/><path d="M126 93Q180 79 234 93L229 109Q180 119 131 109Z" fill="#fff1c5" stroke="#805366" stroke-width="4"/>`
+          : shape === 'ribbon'
+            ? `<path d="M128 91Q180 73 232 91" fill="none" stroke="#805366" stroke-width="9" stroke-linecap="round"/><path d="M199 73Q222 49 238 66Q242 82 215 91Q238 101 229 118Q210 124 197 94Q184 116 166 107Q159 90 190 82Z" fill="${c}" stroke="#805366" stroke-width="4" stroke-linejoin="round"/><circle cx="199" cy="87" r="7" fill="#fff1c5" stroke="#805366" stroke-width="3"/>`
           : shape === 'sunhat'
             ? `<path d="M145 88Q145 49 180 48Q215 49 215 88Z" fill="${c}" stroke="#805366" stroke-width="4"/><path d="M108 91Q180 75 252 91Q244 108 180 109Q116 108 108 91Z" fill="#fff1c5" stroke="#805366" stroke-width="4"/><path d="M124 91Q180 80 236 91" fill="none" stroke="#805366" stroke-width="3"/><text x="180" y="86" text-anchor="middle" font-size="19">${detail}</text>`
             : shape === 'beanie'
               ? `<path d="M132 92Q132 47 180 44Q228 47 228 92Z" fill="${c}" stroke="#805366" stroke-width="4"/><path d="M128 88Q180 80 232 88L229 105Q180 115 131 105Z" fill="#fff1c5" stroke="#805366" stroke-width="4"/><text x="180" y="85" text-anchor="middle" font-size="19">${detail}</text>`
               : `<path d="M139 92Q139 48 180 47Q221 48 221 92Z" fill="${c}" stroke="#805366" stroke-width="4"/><path d="M116 94Q180 78 244 94Q236 110 180 111Q124 110 116 94Z" fill="#fff1c5" stroke="#805366" stroke-width="4"/><text x="180" y="89" text-anchor="middle" font-size="19">${detail}</text>`;
-        const fittedArt = person?.rigId === 'preschool-v1' ? `<g transform="translate(180 84) scale(${shape === 'sunhat' ? 1.08 : shape === 'crown' ? 1.12 : 1.15}) translate(-180 -84) translate(0 -30)">${art}</g>` : art;
+        const fittedArt = person?.rigId === 'preschool-v1'
+          ? shape === 'ribbon'
+            ? art
+            : `<g transform="translate(180 84) scale(${shape === 'sunhat' ? 1.08 : shape === 'crown' ? 1.12 : 1.15}) translate(-180 -84) translate(0 -30)">${art}</g>`
+          : art;
         return fittedArt;
       }
       case 'headAccessory': return `<path d="M153 77Q139 50 166 53L180 69L194 53Q221 50 207 77L180 91Z" fill="${c}" stroke="#805366" stroke-width="4"/><circle cx="180" cy="76" r="7" fill="#ffe99a"/>`;
@@ -128,10 +143,12 @@
     }
   }
 
-  function bodySvg(person, includeBaseHair = true, assetOverride = '') {
+  function bodySvg(person, includeBaseHair = true, assetOverride = '', outfit = {}) {
     const skin = person.skin, hair = person.hair;
-    const custom = assetOverride || window.ASSETS.characters[person.id];
-    if (custom) return `<image href="${esc(runtimeAsset(custom))}" x="0" y="0" width="${ART_WIDTH}" height="${ART_HEIGHT}" preserveAspectRatio="xMidYMid meet"/>`;
+    const hasBodyGarment = Boolean(outfit.top || outfit.dress || outfit.skirt || outfit.pants);
+    const dressable = hasBodyGarment ? window.ASSETS.dressableCharacters?.[person.id] : '';
+    const custom = assetOverride || dressable || window.ASSETS.characters[person.id];
+    if (custom) return `<image data-body-source="${dressable && !assetOverride ? 'dressable' : assetOverride ? 'composite' : 'default'}" href="${esc(runtimeAsset(custom))}" x="0" y="0" width="${ART_WIDTH}" height="${ART_HEIGHT}" preserveAspectRatio="xMidYMid meet"/>`;
     const ears = person.kind === 'rabbit'
       ? `<path d="M145 89Q108 20 129 14Q157 13 168 88M190 88Q207 11 233 16Q252 25 214 103" fill="${skin}" stroke="#8c675c" stroke-width="5"/><path d="M139 73Q127 35 134 31M207 76Q223 32 232 32" stroke="#ec9aa8" stroke-width="9" stroke-linecap="round"/>`
       : person.kind === 'bear' ? `<circle cx="119" cy="76" r="31" fill="${skin}" stroke="#805747" stroke-width="5"/><circle cx="241" cy="76" r="31" fill="${skin}" stroke="#805747" stroke-width="5"/><circle cx="119" cy="76" r="15" fill="#d99b7e"/><circle cx="241" cy="76" r="15" fill="#d99b7e"/>` : '';
@@ -147,13 +164,20 @@
     const safeOutfit = rules.normalizeOutfit(snapshot.outfit || {}, itemById, { characterId: person.id });
     const selections = Object.values(safeOutfit).map(id => itemById[id]).filter(Boolean).sort((a, b) => (data.layers[a.category] || a.layer) - (data.layers[b.category] || b.layer));
     const hair = selections.find(item => item.category === 'hair');
+    const hat = selections.find(item => item.category === 'hat');
     const hairComposite = hair && window.ASSETS.characterHairComposites?.[person.id]?.[hair.id];
+    const occlusion = !hairComposite && hair && hat ? fitEngine.hairOcclusion(hat) : null;
+    const maskId = occlusion ? `hair-mask-${person.id}-${hair.id}-${hat.id}` : '';
     let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${ART_WIDTH} ${ART_HEIGHT}" role="img" aria-label="${esc(person.nameKo)} 캐릭터">`;
-    if (hair && !hairComposite) svg += `<g data-layer="hairBack">${svgItem(hair, 'back', person)}</g>`;
-    svg += `<g data-layer="body">${bodySvg(person, !hair, hairComposite)}</g>`;
+    if (occlusion) {
+      svg += `<defs><mask id="${maskId}"><rect x="0" y="0" width="${ART_WIDTH}" height="${ART_HEIGHT}" fill="white"/><rect x="${occlusion.x}" y="${occlusion.y}" width="${occlusion.width}" height="${occlusion.height}" rx="${occlusion.rx || 0}" fill="black"/></mask></defs>`;
+    }
+    const hairMask = maskId ? ` mask="url(#${maskId})"` : '';
+    if (hair && !hairComposite) svg += `<g data-layer="hairBack"${hairMask}>${svgItem(hair, 'back', person)}</g>`;
+    svg += `<g data-layer="body">${bodySvg(person, !hair, hairComposite, safeOutfit)}</g>`;
     for (const item of selections) {
       if (item.category === 'hair') {
-        if (!hairComposite) svg += `<g data-layer="hair">${svgItem(item, '', person)}</g>`;
+        if (!hairComposite) svg += `<g data-layer="hair"${hairMask}>${svgItem(item, '', person)}</g>`;
       }
       else if (item.category === 'accessory') svg += `<g data-layer="accessory">${svgItem(item, '', person)}</g>`;
       else svg += `<g data-layer="${esc(item.category)}">${svgItem(item, '', person)}</g>`;

@@ -54,22 +54,30 @@ window.ASSETS = {
     shoes_01: 'assets/custom/clothes/shoes_01.png',
     pants_02: 'assets/custom/clothes/pants_02.png'
   },
-  // ImageGen bounding box is fitted to the shared 360×480 character rig.
+  // V8: tops and hats use fitBounds + fit-engine.js with one uniform scale.
+  // Only legacy hair candidates remain here until their source art is re-exported on the master rig.
   itemTransforms: {
-    top_01: { tx: 77.4, ty: 14.6, sx: 0.57, sy: 0.87 },
-    top_04: { tx: 77.4, ty: 14.6, sx: 0.57, sy: 0.87 },
-    top_03: { tx: 77.4, ty: 95, sx: 0.57, sy: 0.7 },
-    top_02: { tx: 77.4, ty: 95, sx: 0.57, sy: 0.7 },
-    top_05: { tx: 77.4, ty: 34.6, sx: 0.57, sy: 0.87 },
     hair_06: { tx: 63, ty: -25.5, sx: 0.57, sy: 0.5 },
-    hair_07: { tx: 81, ty: -30, sx: 0.5, sy: 0.58 },
-    hat_04: { tx: 104, ty: 0, sx: 0.42, sy: 0.32 },
-    hat_01: { tx: 63, ty: -20, sx: 0.65, sy: 0.32 },
-    hat_02: { tx: 90, ty: -22, sx: 0.5, sy: 0.5 },
-    hat_03: { tx: 93.6, ty: -25, sx: 0.48, sy: 0.32 },
-    hat_05: { tx: 90, ty: -25, sx: 0.5, sy: 0.32 },
-    hat_06: { tx: 79, ty: -26, sx: 0.56, sy: 0.36 }
+    hair_07: { tx: 81, ty: -30, sx: 0.5, sy: 0.58 }
   },
+  // Strong-alpha (>=32) visible bounds measured on each 1086×1448 source master.
+  // fit-engine.js maps these bounds into semantic 360×480 slots without anisotropic stretching.
+  fitBounds: {
+    top_01: [193,525,898,1003],
+    top_02: [127,482,959,1034],
+    top_03: [89,381,997,1006],
+    top_04: [188,531,898,1008],
+    top_05: [51,517,1035,1025],
+    hat_01: [179,414,907,831],
+    hat_02: [31,230,1055,630],
+    hat_03: [108,354,980,917],
+    hat_04: [134,211,952,619],
+    hat_05: [92,382,1026,907],
+    hat_06: [141,348,945,851]
+  },
+  // Future hook: Luna should add modest, neutral dressable-base PNGs here after visual approval.
+  // When present, game.js uses them only while a body garment is selected.
+  dressableCharacters: {},
   characterHairComposites: {
     rabbit01: {
       hair_01: 'assets/custom/characters/rabbit01_hair01.png',

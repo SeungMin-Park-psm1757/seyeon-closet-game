@@ -116,7 +116,7 @@
         const art = shape === 'crown'
           ? `<path d="M132 91L140 55L163 71L180 40L197 71L220 55L228 91Z" fill="${c}" stroke="#805366" stroke-width="4"/><path d="M126 93Q180 79 234 93L229 109Q180 119 131 109Z" fill="#fff1c5" stroke="#805366" stroke-width="4"/>`
           : shape === 'ribbon'
-            ? `<path d="M128 91Q180 73 232 91" fill="none" stroke="#805366" stroke-width="9" stroke-linecap="round"/><path d="M199 73Q222 49 238 66Q242 82 215 91Q238 101 229 118Q210 124 197 94Q184 116 166 107Q159 90 190 82Z" fill="${c}" stroke="#805366" stroke-width="4" stroke-linejoin="round"/><circle cx="199" cy="87" r="7" fill="#fff1c5" stroke="#805366" stroke-width="3"/>`
+            ? `<path d="M132 80Q180 66 228 80" fill="none" stroke="#805366" stroke-width="7" stroke-linecap="round"/><path d="M212 63Q228 47 240 58Q243 70 225 77Q241 84 235 96Q221 101 211 80Q201 95 188 88Q184 76 205 70Z" fill="${c}" stroke="#805366" stroke-width="3.5" stroke-linejoin="round"/><circle cx="212" cy="73" r="5" fill="#fff1c5" stroke="#805366" stroke-width="2.5"/>`
           : shape === 'sunhat'
             ? `<path d="M145 88Q145 49 180 48Q215 49 215 88Z" fill="${c}" stroke="#805366" stroke-width="4"/><path d="M108 91Q180 75 252 91Q244 108 180 109Q116 108 108 91Z" fill="#fff1c5" stroke="#805366" stroke-width="4"/><path d="M124 91Q180 80 236 91" fill="none" stroke="#805366" stroke-width="3"/><text x="180" y="86" text-anchor="middle" font-size="19">${detail}</text>`
             : shape === 'beanie'

@@ -23,7 +23,10 @@ function pngMeta(relativePath) {
 
 const wearableEntries = [
   ...Object.entries(ASSETS.characters).map(([id, file]) => ({ type: 'character', id, file })),
-  ...Object.entries(ASSETS.items).map(([id, file]) => ({ type: 'item', id, file }))
+  ...Object.entries(ASSETS.dressableCharacters || {}).map(([id, file]) => ({ type: 'dressable character', id, file })),
+  ...Object.entries(ASSETS.items).map(([id, file]) => ({ type: 'item', id, file })),
+  ...Object.values(ASSETS.characterHairComposites || {}).flatMap((group, index) => Object.entries(group).map(([id, file]) => ({ type: 'hair composite', id: `${index}:${id}`, file }))),
+  ...Object.values(ASSETS.dressableCharacterHairComposites || {}).flatMap((group, index) => Object.entries(group).map(([id, file]) => ({ type: 'dressable hair composite', id: `${index}:${id}`, file })))
 ];
 
 const backgroundEntries = Object.entries(ASSETS.backgrounds).map(([id, file]) => ({ type: 'background', id, file }));

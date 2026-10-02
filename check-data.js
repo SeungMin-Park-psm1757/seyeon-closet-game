@@ -55,10 +55,23 @@ for (const section of ['characters', 'items', 'backgrounds', 'audio']) {
 }
 
 validateRegistry(ASSETS.characters, characterIds, 'character');
+validateRegistry(ASSETS.dressableCharacters || {}, characterIds, 'dressable character');
 validateRegistry(ASSETS.items, itemIds, 'item');
 validateRegistry(ASSETS.backgrounds, backgroundIds, 'background');
 
-for (const [id, sourcePath] of Object.entries({ ...ASSETS.characters, ...ASSETS.items, ...ASSETS.backgrounds })) {
+const compositeAssets = Object.values(ASSETS.characterHairComposites || {}).flatMap(Object.values);
+const dressableCompositeAssets = Object.values(ASSETS.dressableCharacterHairComposites || {}).flatMap(Object.values);
+for (const relativePath of [...compositeAssets, ...dressableCompositeAssets]) {
+  assert.ok(fs.existsSync(path.join(__dirname, relativePath)), `character hair composite is missing: ${relativePath}`);
+}
+
+const registeredImages = [
+  ...Object.entries(ASSETS.characters), ...Object.entries(ASSETS.dressableCharacters || {}),
+  ...Object.entries(ASSETS.items), ...Object.entries(ASSETS.backgrounds),
+  ...compositeAssets.map((asset, i) => [`hair-composite-${i}`, asset]),
+  ...dressableCompositeAssets.map((asset, i) => [`dressable-hair-composite-${i}`, asset])
+];
+for (const [id, sourcePath] of registeredImages) {
   const runtimePath = sourcePath.replace(/^assets\/custom\//, 'assets/runtime/').replace(/\.png$/i, '.webp');
   assert.ok(fs.existsSync(path.join(__dirname, runtimePath)), `runtime WebP is missing for ${id}: ${runtimePath}`);
 }

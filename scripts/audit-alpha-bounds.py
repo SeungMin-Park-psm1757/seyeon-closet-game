@@ -28,7 +28,7 @@ for m in re.finditer(r"""['"](assets/custom/(?:characters|clothes)/[^'"]+\.png)[
     p=m.group(1)
     if p not in paths: paths.append(p)
 
-focus=("girl01","hair_","hat_","top_","dress_","skirt_","pants_","shoes_")
+focus=("girl01","hair_","hat_","top_","dress_","skirt_","pants_","shoes_","dressable","rabbit01_hair")
 rows=[]
 for p in paths:
     name=Path(p).stem

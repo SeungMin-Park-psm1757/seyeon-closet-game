@@ -17,7 +17,7 @@
       sunhat:  { x: 82,  y: 0,  width: 196, height: 95, alignX: 0.5, alignY: 1 },
       beanie:  { x: 108, y: 5,  width: 144, height: 100, alignX: 0.5, alignY: 1 },
       crown:   { x: 122, y: 15, width: 116, height: 80, alignX: 0.5, alignY: 1 },
-      ribbon:  { x: 126, y: 42, width: 108, height: 53, alignX: 0.5, alignY: 1 }
+      ribbon:  { x: 122, y: 25, width: 116, height: 70, alignX: 0.5, alignY: 1 }
     }
   };
 

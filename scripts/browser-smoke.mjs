@@ -2,7 +2,7 @@ import { chromium } from 'playwright';
 import fs from 'node:fs/promises';
 
 const baseURL = process.env.TEST_BASE_URL || 'http://127.0.0.1:4173/';
-const outDir = 'qa/browser-smoke';
+const outDir = 'qa/v9-browser-smoke';
 await fs.mkdir(outDir, { recursive: true });
 
 function assert(condition, message) {
@@ -44,6 +44,7 @@ try {
   const fit = await page.evaluate(() => {
     const svg = document.querySelector('.doll-wrap svg');
     const layers = [...svg.querySelectorAll(':scope > g[data-layer]')].map(layer => layer.dataset.layer);
+    const bodySource = svg.querySelector('[data-layer="body"] [data-body-source]')?.dataset.bodySource;
     const images = [...svg.querySelectorAll('image')].map(image => ({
       x: image.getAttribute('x'), y: image.getAttribute('y'),
       width: image.getAttribute('width'), height: image.getAttribute('height'),
@@ -54,10 +55,11 @@ try {
       transform: group.getAttribute('transform')
     }));
     const hatFits = [...new Set(window.GAME_DATA.items.filter(item => item.category === 'hat').map(item => item.hatFit))];
-    return { layers, images, slotFits, hatFits };
+    return { layers, images, slotFits, hatFits, bodySource };
   });
   assert(fit.images.length >= 6 && fit.images.every(image => image.x === '0' && image.y === '0' && image.width === '360' && image.height === '480' && image.preserve === 'xMidYMid meet'), 'body and source images must preserve the shared 360x480 canvas');
   assert(fit.slotFits.length >= 2 && fit.slotFits.every(entry => /^translate\([^)]*\) scale\([0-9.]+\)$/.test(entry.transform) && Number(entry.scale) > 0), `slot-fitted art must use one uniform scale (${JSON.stringify(fit.slotFits)})`);
+  assert(fit.bodySource === 'dressable', `body garments must replace the default clothed base (${fit.bodySource})`);
   assert(fit.layers.indexOf('body') < fit.layers.indexOf('pants') && fit.layers.indexOf('pants') < fit.layers.indexOf('top') && fit.layers.indexOf('shoes') < fit.layers.indexOf('hair') && fit.layers.indexOf('hair') < fit.layers.indexOf('hat'), `wearable layer order must keep clothing below hair and hat (${fit.layers.join(' > ')})`);
   assert(fit.hatFits.includes('cap') && fit.hatFits.includes('sunhat') && fit.hatFits.includes('beanie') && fit.hatFits.includes('crown') && fit.hatFits.includes('ribbon'), `hats must use explicit semantic fits (${fit.hatFits.join(', ')})`);
   results.push('shared source canvas, uniform slot fitting, semantic hats, and layer order PASS');
@@ -153,6 +155,7 @@ try {
   await page.locator('[data-action="finish"]').click();
   await page.waitForSelector('.finish-page');
   assert(await page.locator('.finish-page').isVisible(), 'finish page must open');
+  assert(await page.locator('.finish-page [data-body-source="dressable"]').count() > 0, 'finish view must render the same dressable base');
   await page.screenshot({ path: `${outDir}/finish-390x844.png`, fullPage: true });
 
   results.push('390x844 outfit invariants PASS');
@@ -215,13 +218,29 @@ try {
     await compatibilityPage.goto(baseURL, { waitUntil: 'networkidle' });
     await compatibilityPage.locator('[data-action="characters"]').click();
     await compatibilityPage.locator(`[data-character="${characterId}"]`).click();
-    for (const [category, itemId] of [['hair','hair_02'],['top','top_02'],['shoes','shoes_02']]) {
+    for (const [category, itemId] of [['hair','hair_02'],['top','top_02'],['pants','pants_02'],['shoes','shoes_02']]) {
       await compatibilityPage.locator(`[data-category="${category}"]`).click();
       assert((await compatibilityPage.locator(`[data-item="${itemId}"]`).count()) === 1, `${characterId} should expose shared ${itemId}`);
       await compatibilityPage.locator(`[data-item="${itemId}"]`).click();
     }
     const shared = await outfit(compatibilityPage);
     assert(shared.hair === 'hair_02' && shared.top === 'top_02' && shared.shoes === 'shoes_02', `${characterId} should persist shared-rig custom art`);
+    assert(await compatibilityPage.locator('.doll-wrap [data-body-source="dressable"]').count() === 1, `${characterId} body garments must replace the original base`);
+    await compatibilityPage.screenshot({ path: `${outDir}/v9-character-${characterId}-top-pants.png`, fullPage: true });
+    for (const [hairId, hatId] of [['hair_02','hat_01'],['hair_04','hat_02'],['hair_07','hat_10']]) {
+      await compatibilityPage.locator('[data-category="hair"]').click();
+      await compatibilityPage.locator(`[data-item="${hairId}"]`).click();
+      await compatibilityPage.locator('[data-category="hat"]').click();
+      await compatibilityPage.locator(`[data-item="${hatId}"]`).click();
+      const expectedSource = characterId === 'rabbit01' && hairId === 'hair_07' ? 'composite' : 'dressable';
+      assert(await compatibilityPage.locator(`.doll-wrap [data-body-source="${expectedSource}"]`).count() === 1, `${characterId} ${hairId}+${hatId} must keep the ${expectedSource} body source`);
+      await compatibilityPage.screenshot({ path: `${outDir}/v9-character-${characterId}-${hairId}-${hatId}.png`, fullPage: true });
+    }
+    await compatibilityPage.locator('[data-category="dress"]').click();
+    await compatibilityPage.locator('[data-item="dress_05"]').click();
+    const dressSource = characterId === 'rabbit01' ? 'composite' : 'dressable';
+    assert(await compatibilityPage.locator(`.doll-wrap [data-body-source="${dressSource}"]`).count() === 1, `${characterId} dress_05 must use its ${dressSource} body`);
+    await compatibilityPage.screenshot({ path: `${outDir}/v9-character-${characterId}-dress05.png`, fullPage: true });
     await compatibilityPage.locator('[data-action="random"]').click();
     const randomized = await outfit(compatibilityPage);
     assert(randomized.hair && randomized.shoes, `${characterId} magic outfit should remain valid`);
@@ -229,7 +248,26 @@ try {
   }
   results.push('shared preschool-v1 custom art remains selectable for all 4 characters');
 
-  // User-reported V8 visual regression set.
+  const rabbitPage = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  await rabbitPage.goto(baseURL, { waitUntil: 'networkidle' });
+  await rabbitPage.locator('[data-action="characters"]').click();
+  await rabbitPage.locator('[data-character="rabbit01"]').click();
+  await rabbitPage.locator('[data-category="hair"]').click();
+  await rabbitPage.locator('[data-item="hair_01"]').click();
+  await rabbitPage.locator('[data-category="top"]').click();
+  await rabbitPage.locator('[data-item="top_02"]').click();
+  assert(await rabbitPage.locator('.doll-wrap [data-body-source="composite"]').count() === 1, 'rabbit hair_01 garment overlay must use its dressable composite');
+  assert(await rabbitPage.locator('.doll-wrap [data-layer="head-overlay"]').count() === 1, 'rabbit face/hair must be restored in front of overlaid clothes');
+  await rabbitPage.screenshot({ path: `${outDir}/v9-character-rabbit-hair01-dressable.png`, fullPage: true });
+  await rabbitPage.locator('[data-action="finish"]').click();
+  assert(await rabbitPage.locator('.finish-page [data-body-source="composite"]').count() === 1, 'rabbit finish view must keep dressable hair composite');
+  await rabbitPage.locator('[data-action="photo"]').click();
+  assert(await rabbitPage.locator('.photo-art [data-body-source="composite"]').count() === 1, 'rabbit album must keep dressable hair composite');
+  await rabbitPage.screenshot({ path: `${outDir}/v9-character-rabbit-hair01-album.png`, fullPage: true });
+  await rabbitPage.close();
+  results.push('rabbit dressable hair composite matches editor, finish, and album PASS');
+
+  // User-reported visual regressions and V9 art/fit set.
   const visualContext = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
   const visualPage = await visualContext.newPage();
   await openEditor(visualPage);
@@ -242,14 +280,60 @@ try {
     await visualPage.waitForTimeout(180);
     await visualPage.screenshot({ path: `${outDir}/${name}.png`, fullPage: true });
   };
-  await capture('v8-hair04-high-ponytail', [['hair','hair_04']]);
-  await capture('v8-hair06-ponytail', [['hair','hair_06']]);
-  await capture('v8-hair07-curly', [['hair','hair_07']]);
-  await capture('v8-hat01-strawberry', [['hair','hair_02'],['hat','hat_01']]);
-  await capture('v8-hat02-sunhat', [['hair','hair_02'],['hat','hat_02']]);
-  await capture('v8-hat10-ribbon-fallback', [['hair','hair_02'],['hat','hat_10']]);
-  await capture('v8-top02-blouse', [['hair','hair_02'],['top','top_02']]);
-  results.push('V8 user-reported hair/hat/top visual regression screenshots captured');
+  await capture('v9-hair04-high-ponytail', [['hair','hair_04']]);
+  await capture('v9-hair06-ponytail', [['hair','hair_06']]);
+  await capture('v9-hair07-curly', [['hair','hair_07']]);
+  await capture('v9-hair08-rounded-bob', [['hair','hair_08']]);
+  for (const id of ['hat_01','hat_02','hat_03','hat_04','hat_05','hat_06','hat_07','hat_08','hat_09','hat_10']) await capture(`v9-${id}`, [['hair','hair_02'],['hat',id]]);
+  for (const id of ['top_01','top_02','top_03','top_04','top_05']) await capture(`v9-${id}`, [['hair','hair_02'],['top',id]]);
+  for (const i of Array.from({ length: 12 }, (_, index) => index + 1)) {
+    const id = `dress_${String(i).padStart(2, '0')}`;
+    await capture(`v9-${id}`, [['hair','hair_02'],['dress',id]]);
+  }
+  await capture('v9-pants02', [['hair','hair_02'],['top','top_02'],['pants','pants_02']]);
+  for (const id of ['skirt_01','skirt_02','skirt_03']) await capture(`v9-${id}`, [['hair','hair_02'],['top','top_02'],['skirt',id]]);
+  for (const id of ['shoes_01','shoes_02','shoes_03','shoes_04']) await capture(`v9-${id}`, [['hair','hair_02'],['shoes',id]]);
+  results.push('V9 hair, 10 hats, all custom tops and dresses, all custom skirts, pants, and shoes screenshots captured');
+
+  const hairIds = Array.from({ length: 8 }, (_, i) => `hair_${String(i + 1).padStart(2, '0')}`);
+  const hatIds = Array.from({ length: 10 }, (_, i) => `hat_${String(i + 1).padStart(2, '0')}`);
+  const hatCells = [];
+  for (const hairId of hairIds) {
+    await visualPage.locator('[data-category="hair"]').click();
+    await visualPage.locator(`[data-item="${hairId}"]`).click();
+    for (const hatId of hatIds) {
+      await visualPage.locator('[data-category="hat"]').click();
+      await visualPage.locator(`[data-item="${hatId}"]`).click();
+      hatCells.push({ hair: hairId, hat: hatId, png: (await visualPage.locator('.doll-wrap svg').screenshot()).toString('base64') });
+    }
+  }
+  assert(hatCells.length === 80, `all 8x10 hair/hat combinations should be captured (${hatCells.length})`);
+  const contactSheet = await visualPage.evaluate(async cells => {
+    const cellW = 96, cellH = 142, columns = 10;
+    const canvas = document.createElement('canvas');
+    canvas.width = cellW * columns;
+    canvas.height = cellH * 8;
+    const context = canvas.getContext('2d');
+    context.fillStyle = '#fff9f0';
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    for (let i = 0; i < cells.length; i++) {
+      const cell = cells[i], x = (i % columns) * cellW, y = Math.floor(i / columns) * cellH;
+      context.fillStyle = '#ffffff';
+      context.fillRect(x + 2, y + 2, cellW - 4, cellH - 4);
+      const image = new Image();
+      image.src = `data:image/png;base64,${cell.png}`;
+      await image.decode();
+      const scale = Math.min((cellW - 8) / image.width, (cellH - 29) / image.height);
+      const width = image.width * scale, height = image.height * scale;
+      context.drawImage(image, x + (cellW - width) / 2, y + (cellH - 24 - height) / 2, width, height);
+      context.fillStyle = '#624b47';
+      context.font = '10px sans-serif';
+      context.fillText(`${cell.hair.slice(-2)}×${cell.hat.slice(-2)}`, x + 5, y + cellH - 8);
+    }
+    return canvas.toDataURL('image/png');
+  }, hatCells);
+  await fs.writeFile(`${outDir}/v9-hair-hat-contact-sheet.png`, Buffer.from(contactSheet.split(',')[1], 'base64'));
+  results.push('80/80 hair x hat visual contact sheet captured');
   await visualContext.close();
 
   // Story mode: all five themes must open with custom backgrounds and recommendation UI.
@@ -287,6 +371,7 @@ try {
   await storyPage.waitForSelector('.album-page');
   assert(await storyPage.locator('.photo-card').count() > 0, 'saved outfit must appear in album');
   assert(await storyPage.locator('.photo-art svg').count() > 0, 'album photo must render SVG art');
+  assert(await storyPage.locator('.photo-art [data-body-source="dressable"]').count() > 0, 'album must render the same dressable base');
   results.push('album save/render PASS');
   await storyContext.close();
 

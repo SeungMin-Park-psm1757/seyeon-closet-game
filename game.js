@@ -112,7 +112,7 @@
         : `<path d="M130 305L230 305L221 432L187 432L178 351L166 432L132 432Z" fill="${c}" stroke="#805366" stroke-width="4" stroke-linejoin="round"/><path d="M135 320L225 320" stroke="#fff5e9" stroke-width="6"/>`;
       case 'shoes': return `<path d="M119 423Q144 432 165 423L171 454Q169 474 136 475Q108 475 108 456Q108 439 119 423ZM194 423Q216 432 241 423L250 453Q253 472 219 475Q188 475 188 457Q187 439 194 423Z" fill="${c}" stroke="#805366" stroke-width="4"/><path d="M113 456Q139 465 169 454M192 456Q224 465 249 454" stroke="#fff9ed" stroke-width="5" stroke-linecap="round"/>`;
       case 'hat': {
-        const shape = item.hatFit || ['cap', 'sunhat', 'beanie', 'crown'][v % 4];
+        const shape = item.hatFit || 'cap';
         const art = shape === 'crown'
           ? `<path d="M132 91L140 55L163 71L180 40L197 71L220 55L228 91Z" fill="${c}" stroke="#805366" stroke-width="4"/><path d="M126 93Q180 79 234 93L229 109Q180 119 131 109Z" fill="#fff1c5" stroke="#805366" stroke-width="4"/>`
           : shape === 'ribbon'
@@ -165,23 +165,36 @@
     const selections = Object.values(safeOutfit).map(id => itemById[id]).filter(Boolean).sort((a, b) => (data.layers[a.category] || a.layer) - (data.layers[b.category] || b.layer));
     const hair = selections.find(item => item.category === 'hair');
     const hat = selections.find(item => item.category === 'hat');
+    const hasBodyGarment = Boolean(safeOutfit.top || safeOutfit.dress || safeOutfit.skirt || safeOutfit.pants);
     const hairComposite = hair && window.ASSETS.characterHairComposites?.[person.id]?.[hair.id];
-    const occlusion = !hairComposite && hair && hat ? fitEngine.hairOcclusion(hat) : null;
+    const dressableHairComposite = hasBodyGarment && hair && window.ASSETS.dressableCharacterHairComposites?.[person.id]?.[hair.id];
+    const characterComposite = dressableHairComposite || hairComposite;
+    const occlusion = !characterComposite && hair && hat ? fitEngine.hairOcclusion(hat) : null;
     const maskId = occlusion ? `hair-mask-${person.id}-${hair.id}-${hat.id}` : '';
+    const headClipId = dressableHairComposite ? `dressable-head-${person.id}-${hair.id}` : '';
     let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${ART_WIDTH} ${ART_HEIGHT}" role="img" aria-label="${esc(person.nameKo)} 캐릭터">`;
     if (occlusion) {
       svg += `<defs><mask id="${maskId}"><rect x="0" y="0" width="${ART_WIDTH}" height="${ART_HEIGHT}" fill="white"/><rect x="${occlusion.x}" y="${occlusion.y}" width="${occlusion.width}" height="${occlusion.height}" rx="${occlusion.rx || 0}" fill="black"/></mask></defs>`;
     }
+    if (headClipId) svg += `<defs><clipPath id="${headClipId}"><path d="M0 0H360V166H273Q273 188 255 214Q238 232 205 237H155Q122 232 105 214Q87 188 87 166H0Z"/></clipPath></defs>`;
     const hairMask = maskId ? ` mask="url(#${maskId})"` : '';
-    if (hair && !hairComposite) svg += `<g data-layer="hairBack"${hairMask}>${svgItem(hair, 'back', person)}</g>`;
-    svg += `<g data-layer="body">${bodySvg(person, !hair, hairComposite, safeOutfit)}</g>`;
+    let headOverlayDrawn = false;
+    const drawHeadOverlay = () => {
+      if (!headClipId || headOverlayDrawn) return;
+      headOverlayDrawn = true;
+      svg += `<g data-layer="head-overlay" clip-path="url(#${headClipId})"><image href="${esc(runtimeAsset(dressableHairComposite))}" x="0" y="0" width="${ART_WIDTH}" height="${ART_HEIGHT}" preserveAspectRatio="xMidYMid meet"/></g>`;
+    };
+    if (hair && !characterComposite) svg += `<g data-layer="hairBack"${hairMask}>${svgItem(hair, 'back', person)}</g>`;
+    svg += `<g data-layer="body">${bodySvg(person, !hair, characterComposite, safeOutfit)}</g>`;
     for (const item of selections) {
+      if (item.category === 'hat') drawHeadOverlay();
       if (item.category === 'hair') {
-        if (!hairComposite) svg += `<g data-layer="hair"${hairMask}>${svgItem(item, '', person)}</g>`;
+        if (!characterComposite) svg += `<g data-layer="hair"${hairMask}>${svgItem(item, '', person)}</g>`;
       }
       else if (item.category === 'accessory') svg += `<g data-layer="accessory">${svgItem(item, '', person)}</g>`;
       else svg += `<g data-layer="${esc(item.category)}">${svgItem(item, '', person)}</g>`;
     }
+    drawHeadOverlay();
     return `${svg}</svg>`;
   }
 

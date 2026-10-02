@@ -13,14 +13,19 @@ window.ASSETS = {
     hair_03: 'assets/custom/clothes/hair_03.png',
     hair_04: 'assets/custom/clothes/hair_04.png',
     hair_05: 'assets/custom/clothes/hair_05_v1.png',
-    hair_06: 'assets/custom/clothes/hair_06_v2.png',
-    hair_07: 'assets/custom/clothes/hair_07_v1.png',
+    hair_06: 'assets/custom/clothes/hair_06_v3.png',
+    hair_07: 'assets/custom/clothes/hair_07_v2.png',
+    hair_08: 'assets/custom/clothes/hair_08_v1.png',
     hat_04: 'assets/custom/clothes/hat_04_v1.png',
     hat_01: 'assets/custom/clothes/hat_01_v1.png',
     hat_02: 'assets/custom/clothes/hat_02_v1.png',
     hat_03: 'assets/custom/clothes/hat_03_v1.png',
     hat_05: 'assets/custom/clothes/hat_05_v1.png',
     hat_06: 'assets/custom/clothes/hat_06_v1.png',
+    hat_07: 'assets/custom/clothes/hat_07_v1.png',
+    hat_08: 'assets/custom/clothes/hat_08_v1.png',
+    hat_09: 'assets/custom/clothes/hat_09_v1.png',
+    hat_10: 'assets/custom/clothes/hat_10_v1.png',
     top_01: 'assets/custom/clothes/top_01_v2.png',
     top_05: 'assets/custom/clothes/top_05_v1.png',
     top_04: 'assets/custom/clothes/top_04_v1.png',
@@ -55,11 +60,7 @@ window.ASSETS = {
     pants_02: 'assets/custom/clothes/pants_02.png'
   },
   // V8: tops and hats use fitBounds + fit-engine.js with one uniform scale.
-  // Only legacy hair candidates remain here until their source art is re-exported on the master rig.
-  itemTransforms: {
-    hair_06: { tx: 63, ty: -25.5, sx: 0.57, sy: 0.5 },
-    hair_07: { tx: 81, ty: -30, sx: 0.5, sy: 0.58 }
-  },
+  // All registered wearable masters now use their own full-canvas placement.
   // Strong-alpha (>=32) visible bounds measured on each 1086×1448 source master.
   // fit-engine.js maps these bounds into semantic 360×480 slots without anisotropic stretching.
   fitBounds: {
@@ -73,16 +74,31 @@ window.ASSETS = {
     hat_03: [108,354,980,917],
     hat_04: [134,211,952,619],
     hat_05: [92,382,1026,907],
-    hat_06: [141,348,945,851]
+    hat_06: [141,348,945,851],
+    hat_07: [72,385,1018,978],
+    hat_08: [57,358,1029,987],
+    hat_09: [54,269,1033,833],
+    hat_10: [105,282,983,938]
   },
-  // Future hook: Luna should add modest, neutral dressable-base PNGs here after visual approval.
-  // When present, game.js uses them only while a body garment is selected.
-  dressableCharacters: {},
+  // Neutral base art appears only while a body garment is selected.
+  dressableCharacters: {
+    girl01: 'assets/custom/characters/dressable/girl01.png',
+    girl02: 'assets/custom/characters/dressable/girl02.png',
+    bear01: 'assets/custom/characters/dressable/bear01.png',
+    rabbit01: 'assets/custom/characters/dressable/rabbit01.png'
+  },
   characterHairComposites: {
     rabbit01: {
       hair_01: 'assets/custom/characters/rabbit01_hair01.png',
       hair_03: 'assets/custom/characters/rabbit01_hair03.png',
       hair_07: 'assets/custom/characters/rabbit01_hair07.png'
+    }
+  },
+  dressableCharacterHairComposites: {
+    rabbit01: {
+      hair_01: 'assets/custom/characters/rabbit01_hair01_dressable.png',
+      hair_03: 'assets/custom/characters/rabbit01_hair03_dressable.png',
+      hair_07: 'assets/custom/characters/rabbit01_hair07_dressable.png'
     }
   },
   backgrounds: {

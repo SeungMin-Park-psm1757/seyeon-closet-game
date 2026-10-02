@@ -34,7 +34,7 @@ for (const id of ['hat_01','hat_02','hat_03','hat_04','hat_05','hat_06']) {
   const r = fit.fitItem(itemById[id], assets);
   assert.ok(r, `${id} must use V8 slot fitting`);
   assert.ok(r.renderedBounds.width >= 110 && r.renderedBounds.width <= 200, `${id} rendered width is implausible`);
-  assert.ok(r.renderedBounds.y + r.renderedBounds.height <= 109, `${id} brim/base should stay near the common forehead line`);
+  assert.ok(r.renderedBounds.y + r.renderedBounds.height <= 106, `${id} brim/base should stay above the eye line`);
 }
 
 assert.equal(itemById.hat_10.hatFit, 'ribbon', '리본 모자 must not fall back to a sunhat shape');

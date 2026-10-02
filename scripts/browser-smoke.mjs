@@ -64,7 +64,7 @@ try {
   await page.locator('[data-item="dress_05"]').click();
   await page.locator('[data-action="undo"]').click();
   value = await outfit(page);
-  assert(!value.dress && value.shoes === 'shoes_01', 'undo must restore the previous outfit');
+  assert(!value.dress && value.shoes === 'shoes_02', 'undo must restore the previous outfit');
   await page.locator('[data-category="dress"]').click();
   await page.locator('[data-item="dress_05"]').click();
   await page.locator('[data-category="top"]').click();
@@ -85,7 +85,7 @@ try {
   assert(value.dress === 'dress_05' && !value.top && !value.skirt && !value.pants, 'dress must remove top and bottoms');
   await page.locator('[data-action="reset"]').click();
   value = await outfit(page);
-  assert(value.hair === 'hair_01' && value.shoes === 'shoes_01' && !value.dress && !value.top && !value.skirt && !value.pants, 'reset must restore the default outfit');
+  assert(value.hair === 'hair_01' && value.shoes === 'shoes_02' && !value.dress && !value.top && !value.skirt && !value.pants, 'reset must restore the default outfit');
   await page.locator('[data-action="random"]').click();
   value = await outfit(page);
   assert(value.hair && value.shoes && !(value.dress && (value.top || value.skirt || value.pants)), 'free-mode magic outfit must produce a valid outfit');

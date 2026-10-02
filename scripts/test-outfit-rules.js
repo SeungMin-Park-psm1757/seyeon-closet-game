@@ -17,6 +17,7 @@ assert.equal(normalized.dress, 'dress_05');
 assert.equal(normalized.top, undefined);
 assert.equal(normalized.pants, undefined);
 assert.equal(normalized.bogus, undefined);
+assert.equal(normalized.shoes, 'shoes_02', 'normalization must restore a shared default shoe');
 
 const invalid = rules.normalizeOutfit({ hair:'dress_01', pants:['pants_01'], skirt:'skirt_01', pants_2:'pants_02' }, itemById);
 assert.equal(invalid.hair, 'hair_01');
@@ -38,11 +39,11 @@ assert.equal(outfit.pants, undefined);
 assert.equal(outfit.dress, 'dress_05');
 assert.equal(rules.hasConflict(outfit), false);
 
-const shoesRemoved = rules.applyItemSelection(outfit, 'shoes_01', itemById);
-assert.equal(shoesRemoved.shoes, undefined, 'shoes may be removed');
-const shoesRestored = rules.applyItemSelection(shoesRemoved, 'shoes_01', itemById);
-assert.equal(shoesRestored.shoes, 'shoes_01', 'shoes may be selected again');
-const hairAgain = rules.applyItemSelection(shoesRestored, 'hair_01', itemById);
+const shoesKept = rules.applyItemSelection(outfit, 'shoes_01', itemById);
+assert.equal(shoesKept.shoes, 'shoes_01', 'tapping the selected shoe must not leave feet bare');
+const shoesReplaced = rules.applyItemSelection(shoesKept, 'shoes_02', itemById);
+assert.equal(shoesReplaced.shoes, 'shoes_02', 'shoes may still be replaced');
+const hairAgain = rules.applyItemSelection(shoesReplaced, 'hair_01', itemById);
 assert.equal(hairAgain.hair, 'hair_01', 'hair may not be removed');
 
 let seed = 0x5eed1234;

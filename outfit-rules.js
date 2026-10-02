@@ -41,6 +41,12 @@
       if (hair && hair.category === 'hair' && isCompatible(hair, options.characterId)) result.hair = defaultHair;
     }
 
+    const defaultShoes = options.defaultShoes === undefined ? 'shoes_02' : options.defaultShoes;
+    if (!result.shoes && defaultShoes) {
+      const shoes = lookup(itemById, defaultShoes);
+      if (shoes && shoes.category === 'shoes' && isCompatible(shoes, options.characterId)) result.shoes = defaultShoes;
+    }
+
     return result;
   }
 
@@ -49,7 +55,7 @@
     const item = lookup(itemById, itemId);
     if (!item || !isCompatible(item, options.characterId)) return current;
 
-    if (current[item.category] === item.id && item.category !== 'hair') {
+    if (current[item.category] === item.id && !['hair', 'shoes'].includes(item.category)) {
       const next = { ...current };
       delete next[item.category];
       return normalizeOutfit(next, itemById, options);

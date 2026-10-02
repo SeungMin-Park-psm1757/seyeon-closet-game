@@ -15,7 +15,7 @@
   const savedCharacterId = saved.characterId || 'girl01';
   const initialOutfit = saved.outfit && typeof saved.outfit === 'object' && !Array.isArray(saved.outfit)
     ? rules.normalizeOutfit(saved.outfit, itemById, { characterId: savedCharacterId })
-    : rules.normalizeOutfit({ hair: 'hair_01', shoes: 'shoes_01' }, itemById, { characterId: savedCharacterId });
+    : rules.normalizeOutfit({ hair: 'hair_01', shoes: 'shoes_02' }, itemById, { characterId: savedCharacterId });
   const state = {
     view: 'home', mode: saved.mode || 'free', themeId: saved.themeId || '', characterId: savedCharacterId,
     outfit: initialOutfit, backgroundId: saved.backgroundId || 'room', categoryId: 'hair',
@@ -25,7 +25,7 @@
   };
   const railScroll = { categories: 0, items: Object.create(null) };
   let renderedCategoryId = state.categoryId;
-  let context = null, beat = 0, bgmTimer = 0, toastTimer = 0;
+  let context = null, beat = 0, bgmTimer = 0, activeBgmFile = '', toastTimer = 0;
   const phrases = ['예쁘다!', '멋져요!', '정말 잘 골랐어요!', '짜잔!'];
 
   function persist() {
@@ -66,36 +66,42 @@
   function characterPortrait(person) {
     const custom = window.ASSETS.characters[person.id];
     return custom
-      ? `<span class="character-portrait">${avatarSvg({ characterId: person.id, outfit: { hair: 'hair_03', dress: 'dress_01', shoes: 'shoes_01' } })}</span>`
+      ? `<span class="character-portrait">${avatarSvg({ characterId: person.id, outfit: { hair: 'hair_03', dress: 'dress_01', shoes: 'shoes_02' } })}</span>`
       : `<span class="character-face">${person.emoji}</span>`;
   }
 
   function svgItem(item, part = '', person = null) {
     if (!item) return '';
-    const custom = rules.isCompatible(item, person?.id) ? window.ASSETS.items[item.id] || item.asset : null;
-    if (custom) return part === 'back' ? '' : `<image href="${esc(runtimeAsset(custom))}" x="0" y="0" width="${ART_WIDTH}" height="${ART_HEIGHT}" preserveAspectRatio="xMidYMid meet"/>`;
+    const characterAsset = window.ASSETS.characterItems?.[person?.id]?.[item.id];
+    const custom = rules.isCompatible(item, person?.id) ? characterAsset || window.ASSETS.items[item.id] || item.asset : null;
+    if (custom) {
+      if (part === 'back') return '';
+      const image = `<image href="${esc(runtimeAsset(custom))}" x="0" y="0" width="${ART_WIDTH}" height="${ART_HEIGHT}" preserveAspectRatio="xMidYMid meet"/>`;
+      const fit = window.ASSETS.itemTransforms?.[item.id];
+      return fit ? `<g transform="translate(${fit.tx} ${fit.ty}) scale(${fit.sx} ${fit.sy})">${image}</g>` : image;
+    }
     const c = item.color, v = item.variant, detail = ['✿','♥','★','✦'][v % 4];
     switch (item.category) {
       case 'hair':
-        if (person?.id === 'girl01') return part === 'back'
+        if (person?.rigId === 'preschool-v1') return part === 'back'
           ? `<path d="M99 129Q83 15 180 15Q277 15 261 129L256 229L234 212L230 101Q180 138 130 101L126 212L104 229Z" fill="${c}" stroke="#65413c" stroke-width="5" stroke-linejoin="round"/>`
           : `<path d="M99 119Q93 15 180 15Q267 15 261 119Q238 100 219 104Q195 112 179 97Q152 117 127 103Z" fill="${c}" stroke="#65413c" stroke-width="5"/><path d="M105 111Q104 158 121 177M255 111Q256 155 239 172" fill="none" stroke="${c}" stroke-width="17" stroke-linecap="round"/>`;
         return part === 'back'
           ? `<path d="M91 139Q72 30 177 30Q287 25 270 151L263 239L236 213L232 105Q179 149 121 105L115 218L88 239Z" fill="${c}" stroke="#65413c" stroke-width="5" stroke-linejoin="round"/>`
           : `<path d="M101 119Q101 35 180 37Q259 34 260 120Q238 99 219 104Q195 112 179 97Q152 117 127 103Z" fill="${c}" stroke="#65413c" stroke-width="5"/><path d="M106 111Q105 159 121 177M254 111Q255 155 238 172" fill="none" stroke="${c}" stroke-width="17" stroke-linecap="round"/>`;
-      case 'top': return person?.id === 'girl01'
+      case 'top': return person?.rigId === 'preschool-v1'
         ? `<path d="M135 177L158 168Q180 185 202 168L225 177L251 209L228 226L217 212L222 250Q180 258 138 250L143 212L132 226L109 209Z" fill="${c}" stroke="#805366" stroke-width="4" stroke-linejoin="round"/><path d="M146 177Q180 199 214 177" fill="none" stroke="#fff5e9" stroke-width="6"/><text x="180" y="229" text-anchor="middle" font-size="20" fill="#fff9e8">${detail}</text>`
         : `<path d="M135 212L157 202Q180 222 203 202L225 212L251 243L228 260L218 246L230 347Q180 361 130 347L142 246L132 260L109 243Z" fill="${c}" stroke="#805366" stroke-width="4" stroke-linejoin="round"/><path d="M146 216Q180 239 214 216" fill="none" stroke="#fff5e9" stroke-width="7"/><text x="180" y="300" text-anchor="middle" font-size="27" fill="#fff9e8">${detail}</text>`;
-      case 'dress': return person?.id === 'girl01'
+      case 'dress': return person?.rigId === 'preschool-v1'
         ? `<path d="M135 177L158 168Q180 185 202 168L225 177L251 209L228 226L217 212L255 372Q180 390 105 372L143 212L132 226L109 209Z" fill="${c}" stroke="#805366" stroke-width="4" stroke-linejoin="round"/><path d="M146 177Q180 199 214 177M120 352Q180 369 240 352" fill="none" stroke="#fff4e6" stroke-width="7"/><text x="180" y="300" text-anchor="middle" font-size="28" fill="#fff9e8">${detail}</text>`
         : `<path d="M143 211L160 204Q180 225 200 204L217 211L237 242L218 256L207 244L259 377Q180 399 101 377L153 244L142 256L123 242Z" fill="${c}" stroke="#805366" stroke-width="4" stroke-linejoin="round"/><path d="M146 216Q180 239 214 216M118 356Q180 372 242 356" fill="none" stroke="#fff4e6" stroke-width="7"/><text x="180" y="315" text-anchor="middle" font-size="34" fill="#fff9e8">${detail}</text>`;
-      case 'skirt': return person?.id === 'girl01'
+      case 'skirt': return person?.rigId === 'preschool-v1'
         ? `<path d="M137 252Q180 266 223 252L253 372Q180 390 107 372Z" fill="${c}" stroke="#805366" stroke-width="4"/><path d="M131 272Q180 287 229 272" fill="none" stroke="#fff5e9" stroke-width="7"/><text x="180" y="358" text-anchor="middle" font-size="25" fill="#fff9e8">${detail}</text>`
         : `<path d="M137 307Q180 321 223 307L253 385Q180 403 107 385Z" fill="${c}" stroke="#805366" stroke-width="4"/><path d="M131 329Q180 342 229 329" fill="none" stroke="#fff5e9" stroke-width="7"/><text x="180" y="373" text-anchor="middle" font-size="28" fill="#fff9e8">${detail}</text>`;
-      case 'pants': return person?.id === 'girl01'
+      case 'pants': return person?.rigId === 'preschool-v1'
         ? `<path d="M130 250L230 250L221 432L187 432L178 337L166 432L132 432Z" fill="${c}" stroke="#805366" stroke-width="4" stroke-linejoin="round"/><path d="M135 266L225 266" stroke="#fff5e9" stroke-width="6"/>`
         : `<path d="M130 305L230 305L221 432L187 432L178 351L166 432L132 432Z" fill="${c}" stroke="#805366" stroke-width="4" stroke-linejoin="round"/><path d="M135 320L225 320" stroke="#fff5e9" stroke-width="6"/>`;
-      case 'shoes': return `<path d="M119 430Q144 439 165 430L170 453Q158 469 111 460Q101 450 119 430ZM194 430Q216 439 241 430L251 451Q251 468 203 461Q186 456 194 430Z" fill="${c}" stroke="#805366" stroke-width="4"/><path d="M114 453Q140 462 166 452M197 453Q225 462 248 452" stroke="#fff9ed" stroke-width="5" stroke-linecap="round"/>`;
+      case 'shoes': return `<path d="M119 423Q144 432 165 423L171 454Q169 474 136 475Q108 475 108 456Q108 439 119 423ZM194 423Q216 432 241 423L250 453Q253 472 219 475Q188 475 188 457Q187 439 194 423Z" fill="${c}" stroke="#805366" stroke-width="4"/><path d="M113 456Q139 465 169 454M192 456Q224 465 249 454" stroke="#fff9ed" stroke-width="5" stroke-linecap="round"/>`;
       case 'hat': {
         const shape = item.hatFit || ['cap', 'sunhat', 'beanie', 'crown'][v % 4];
         const art = shape === 'crown'
@@ -105,15 +111,15 @@
             : shape === 'beanie'
               ? `<path d="M132 92Q132 47 180 44Q228 47 228 92Z" fill="${c}" stroke="#805366" stroke-width="4"/><path d="M128 88Q180 80 232 88L229 105Q180 115 131 105Z" fill="#fff1c5" stroke="#805366" stroke-width="4"/><text x="180" y="85" text-anchor="middle" font-size="19">${detail}</text>`
               : `<path d="M139 92Q139 48 180 47Q221 48 221 92Z" fill="${c}" stroke="#805366" stroke-width="4"/><path d="M116 94Q180 78 244 94Q236 110 180 111Q124 110 116 94Z" fill="#fff1c5" stroke="#805366" stroke-width="4"/><text x="180" y="89" text-anchor="middle" font-size="19">${detail}</text>`;
-        const fittedArt = person?.id === 'girl01' ? `<g transform="translate(180 84) scale(${shape === 'sunhat' ? 1.08 : shape === 'crown' ? 1.12 : 1.15}) translate(-180 -84) translate(0 -30)">${art}</g>` : art;
+        const fittedArt = person?.rigId === 'preschool-v1' ? `<g transform="translate(180 84) scale(${shape === 'sunhat' ? 1.08 : shape === 'crown' ? 1.12 : 1.15}) translate(-180 -84) translate(0 -30)">${art}</g>` : art;
         return fittedArt;
       }
       case 'headAccessory': return `<path d="M153 77Q139 50 166 53L180 69L194 53Q221 50 207 77L180 91Z" fill="${c}" stroke="#805366" stroke-width="4"/><circle cx="180" cy="76" r="7" fill="#ffe99a"/>`;
       case 'accessory': return v === 4 || v === 5 || v === 6
-        ? person?.id === 'girl01'
+        ? person?.rigId === 'preschool-v1'
           ? `<g fill="none" stroke="${c}" stroke-width="6"><circle cx="144" cy="101" r="17"/><circle cx="216" cy="101" r="17"/><path d="M161 101Q180 93 199 101"/></g><circle cx="144" cy="101" r="3" fill="#513832"/><circle cx="216" cy="101" r="3" fill="#513832"/>`
           : `<g fill="none" stroke="${c}" stroke-width="7"><circle cx="145" cy="137" r="21"/><circle cx="215" cy="137" r="21"/><path d="M166 137Q180 126 194 137"/></g><circle cx="145" cy="137" r="3" fill="#513832"/><circle cx="215" cy="137" r="3" fill="#513832"/>`
-        : person?.id === 'girl01'
+        : person?.rigId === 'preschool-v1'
           ? `<path d="M151 173Q180 203 209 173" fill="none" stroke="${c}" stroke-width="6"/><path d="M180 187l6 7-6 7-6-7z" fill="#ffe477"/><text x="180" y="202" text-anchor="middle" font-size="15" fill="${c}">${detail}</text>`
           : `<path d="M145 217Q180 257 215 217" fill="none" stroke="${c}" stroke-width="7"/><path d="M180 235l7 8-7 8-7-8z" fill="#ffe477"/><text x="180" y="252" text-anchor="middle" font-size="17" fill="${c}">${detail}</text>`;
       case 'bag': return `<path d="M206 257Q249 240 252 295" fill="none" stroke="#805366" stroke-width="6"/><rect x="218" y="286" width="64" height="74" rx="19" fill="${c}" stroke="#805366" stroke-width="4"/><path d="M236 290Q238 268 251 268Q266 268 266 290" fill="none" stroke="#805366" stroke-width="5"/><text x="250" y="333" text-anchor="middle" font-size="27">${detail}</text>`;
@@ -122,9 +128,9 @@
     }
   }
 
-  function bodySvg(person, includeBaseHair = true) {
+  function bodySvg(person, includeBaseHair = true, assetOverride = '') {
     const skin = person.skin, hair = person.hair;
-    const custom = window.ASSETS.characters[person.id];
+    const custom = assetOverride || window.ASSETS.characters[person.id];
     if (custom) return `<image href="${esc(runtimeAsset(custom))}" x="0" y="0" width="${ART_WIDTH}" height="${ART_HEIGHT}" preserveAspectRatio="xMidYMid meet"/>`;
     const ears = person.kind === 'rabbit'
       ? `<path d="M145 89Q108 20 129 14Q157 13 168 88M190 88Q207 11 233 16Q252 25 214 103" fill="${skin}" stroke="#8c675c" stroke-width="5"/><path d="M139 73Q127 35 134 31M207 76Q223 32 232 32" stroke="#ec9aa8" stroke-width="9" stroke-linecap="round"/>`
@@ -141,11 +147,14 @@
     const safeOutfit = rules.normalizeOutfit(snapshot.outfit || {}, itemById, { characterId: person.id });
     const selections = Object.values(safeOutfit).map(id => itemById[id]).filter(Boolean).sort((a, b) => (data.layers[a.category] || a.layer) - (data.layers[b.category] || b.layer));
     const hair = selections.find(item => item.category === 'hair');
+    const hairComposite = hair && window.ASSETS.characterHairComposites?.[person.id]?.[hair.id];
     let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${ART_WIDTH} ${ART_HEIGHT}" role="img" aria-label="${esc(person.nameKo)} 캐릭터">`;
-    if (hair) svg += `<g data-layer="hairBack">${svgItem(hair, 'back', person)}</g>`;
-    svg += `<g data-layer="body">${bodySvg(person, !hair)}</g>`;
+    if (hair && !hairComposite) svg += `<g data-layer="hairBack">${svgItem(hair, 'back', person)}</g>`;
+    svg += `<g data-layer="body">${bodySvg(person, !hair, hairComposite)}</g>`;
     for (const item of selections) {
-      if (item.category === 'hair') svg += `<g data-layer="hair">${svgItem(item, '', person)}</g>`;
+      if (item.category === 'hair') {
+        if (!hairComposite) svg += `<g data-layer="hair">${svgItem(item, '', person)}</g>`;
+      }
       else if (item.category === 'accessory') svg += `<g data-layer="accessory">${svgItem(item, '', person)}</g>`;
       else svg += `<g data-layer="${esc(item.category)}">${svgItem(item, '', person)}</g>`;
     }
@@ -180,11 +189,15 @@
     osc.connect(gain); gain.connect(context.destination); osc.start(now); osc.stop(now + .18);
   }
   function startBgm() {
-    if (state.muted || bgmTimer) return;
-    if (window.ASSETS.audio.bgm) {
-      state.sound = new Audio(window.ASSETS.audio.bgm);
+    if (state.muted) return;
+    const audio = window.ASSETS.audio;
+    const file = state.mode === 'story' && audio.themes?.[state.themeId] || audio.bgm;
+    if (bgmTimer && file === activeBgmFile) return;
+    stopBgm();
+    if (file) {
+      state.sound = new Audio(file);
       state.sound.loop = true; state.sound.volume = .18;
-      state.sound.play().catch(() => {}); bgmTimer = -1; return;
+      state.sound.play().catch(() => {}); activeBgmFile = file; bgmTimer = -1; return;
     }
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     if (!AudioContext) return;
@@ -202,7 +215,7 @@
   function stopBgm() {
     if (bgmTimer > 0) clearInterval(bgmTimer);
     if (state.sound) { state.sound.pause(); state.sound.currentTime = 0; state.sound = null; }
-    bgmTimer = 0;
+    activeBgmFile = ''; bgmTimer = 0;
   }
   function notice(message) {
     let toast = $('.toast');
@@ -214,7 +227,7 @@
     state.sparkle = sparks[Math.floor(Math.random() * sparks.length)];
     setTimeout(() => { state.sparkle = ''; $('.sparkle-burst', app)?.remove(); }, 700);
   }
-  function continueDressing() { state.view = 'editor'; state.sparkle = ''; render(); }
+  function continueDressing() { state.view = 'editor'; state.sparkle = ''; render(); startBgm(); }
   function home() { state.view = 'home'; state.sparkle = ''; persist(); render(); }
 
   function renderHome() {
@@ -394,7 +407,7 @@
         if (previous) { state.outfit = rules.normalizeOutfit(previous.outfit, itemById, { characterId: state.characterId }); state.backgroundId = previous.backgroundId; persist(); render(); play('dress'); }
       }
       else if (action === 'random') randomOutfit();
-      else if (action === 'reset') { pushUndo(); state.outfit = rules.normalizeOutfit({ hair: 'hair_01', shoes: 'shoes_01' }, itemById, { characterId: state.characterId }); persist(); render(); }
+      else if (action === 'reset') { pushUndo(); state.outfit = rules.normalizeOutfit({ hair: 'hair_01', shoes: 'shoes_02' }, itemById, { characterId: state.characterId }); persist(); render(); }
       else if (action === 'finish') finish();
       else if (action === 'photo') savePhoto();
       else if (action === 'again') continueDressing();

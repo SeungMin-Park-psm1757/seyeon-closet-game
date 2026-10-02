@@ -22,7 +22,6 @@
       category: category.id,
       nameKo,
       asset,
-      ...(asset ? { compatibleCharacters: ['girl01'] } : {}),
       ...(category.id === 'hat' ? { hatFit: ['cap', 'sunhat', 'beanie', 'crown'][i % 4] } : {}),
       tags: ['cute', `color-${i % colors.length}`],
       color: colors[i % colors.length],
@@ -32,10 +31,10 @@
   }));
 
   const characters = [
-    { id: 'girl01', nameKo: '세연이', emoji: '👧🏻', skin: '#f5c79f', hair: '#49332f', kind: 'human', blush: '#f39bb1' },
-    { id: 'girl02', nameKo: '하늘이', emoji: '👧🏽', skin: '#d99d72', hair: '#332823', kind: 'human', blush: '#e58183' },
-    { id: 'bear01', nameKo: '곰돌이', emoji: '🐻', skin: '#b97952', hair: '#754b39', kind: 'bear', blush: '#ed9b9a' },
-    { id: 'rabbit01', nameKo: '토끼', emoji: '🐰', skin: '#fff0dc', hair: '#e7b7a7', kind: 'rabbit', blush: '#f09aa8' }
+    { id: 'girl01', nameKo: '세연이', emoji: '👧🏻', skin: '#f5c79f', hair: '#49332f', kind: 'human', blush: '#f39bb1', rigId: 'preschool-v1' },
+    { id: 'girl02', nameKo: '하늘이', emoji: '👧🏽', skin: '#d99d72', hair: '#332823', kind: 'human', blush: '#e58183', rigId: 'preschool-v1' },
+    { id: 'bear01', nameKo: '곰돌이', emoji: '🐻', skin: '#b97952', hair: '#754b39', kind: 'bear', blush: '#ed9b9a', rigId: 'preschool-v1' },
+    { id: 'rabbit01', nameKo: '토끼', emoji: '🐰', skin: '#fff0dc', hair: '#e7b7a7', kind: 'rabbit', blush: '#f09aa8', rigId: 'preschool-v1' }
   ];
 
   window.GAME_DATA = {

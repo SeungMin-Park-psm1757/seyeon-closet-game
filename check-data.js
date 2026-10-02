@@ -63,7 +63,9 @@ for (const [id, sourcePath] of Object.entries({ ...ASSETS.characters, ...ASSETS.
   assert.ok(fs.existsSync(path.join(__dirname, runtimePath)), `runtime WebP is missing for ${id}: ${runtimePath}`);
 }
 
-for (const [name, relativePath] of Object.entries(ASSETS.audio)) {
+const audioFiles = { ...ASSETS.audio, ...ASSETS.audio.themes };
+delete audioFiles.themes;
+for (const [name, relativePath] of Object.entries(audioFiles)) {
   if (relativePath) {
     assert.ok(fs.existsSync(path.join(__dirname, relativePath)), `audio asset is missing (${name}): ${relativePath}`);
   }

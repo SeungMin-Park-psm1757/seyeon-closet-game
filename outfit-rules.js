@@ -35,6 +35,10 @@
       delete result.skirt;
     }
 
+    // Headwear is one visual slot in this preschool UI. Never stack a hat
+    // and a head accessory because generated assets overlap unpredictably.
+    if (result.hat && result.headAccessory) delete result.headAccessory;
+
     const defaultHair = options.defaultHair === undefined ? 'hair_01' : options.defaultHair;
     if (!result.hair && defaultHair) {
       const hair = lookup(itemById, defaultHair);
@@ -75,6 +79,10 @@
     } else if (item.category === 'pants') {
       delete next.dress;
       delete next.skirt;
+    } else if (item.category === 'hat') {
+      delete next.headAccessory;
+    } else if (item.category === 'headAccessory') {
+      delete next.hat;
     }
 
     next[item.category] = item.id;
@@ -85,7 +93,8 @@
     const value = outfit && typeof outfit === 'object' ? outfit : {};
     return Boolean(
       (value.dress && (value.top || value.skirt || value.pants)) ||
-      (value.skirt && value.pants)
+      (value.skirt && value.pants) ||
+      (value.hat && value.headAccessory)
     );
   }
 
@@ -107,10 +116,15 @@
       if (bottom) result = applyItemSelection(result, bottom.id, itemById, options);
     }
 
-    for (const category of ['shoes', 'accessory', 'headAccessory']) {
+    for (const category of ['shoes', 'accessory']) {
       const item = choose(byCategory(category));
       if (item) result = applyItemSelection(result, item.id, itemById, options);
     }
+
+    // Pick at most one head decoration.
+    const headCategory = random() < 0.55 ? 'hat' : 'headAccessory';
+    const headItem = choose(byCategory(headCategory));
+    if (headItem) result = applyItemSelection(result, headItem.id, itemById, options);
 
     return normalizeOutfit(result, itemById, options);
   }

@@ -164,11 +164,11 @@
         <circle cx="165" cy="134" r="1.35"/><circle cx="171" cy="136" r="1.15"/>
         <circle cx="189" cy="136" r="1.15"/><circle cx="195" cy="134" r="1.35"/>
       </g>
-      <ellipse cx="180" cy="143" rx="18" ry="10" fill="${skin}" opacity=".98"/>
-      <path d="M166 140Q180 153 194 140Q192 155 180 157Q168 155 166 140Z"
-        fill="#7f4338" stroke="#6d382f" stroke-width="1.6" stroke-linejoin="round"/>
-      <path d="M171 142Q180 147 189 142" fill="none" stroke="#fff3e8" stroke-width="2.2" stroke-linecap="round"/>
-      <path d="M174 152Q180 155 186 152" fill="none" stroke="#e88d92" stroke-width="2" stroke-linecap="round"/>
+      <ellipse cx="180" cy="143" rx="15" ry="8" fill="${skin}" opacity=".98"/>
+      <path d="M168 141Q180 150 192 141Q190 152 180 154Q170 152 168 141Z"
+        fill="#7f4338" stroke="#6d382f" stroke-width="1.5" stroke-linejoin="round"/>
+      <path d="M172 143Q180 146 188 143" fill="none" stroke="#fff3e8" stroke-width="2" stroke-linecap="round"/>
+      <path d="M175 150Q180 152 185 150" fill="none" stroke="#e88d92" stroke-width="1.8" stroke-linecap="round"/>
     </g>`;
   }
 

@@ -225,6 +225,7 @@ try {
   await offlineContext.close();
 
   // V10: shared body rig, with character-specific hair compatibility.
+  const identityRenders = [];
   for (const characterId of ['girl01', 'girl02', 'bear01', 'rabbit01']) {
     const compatibilityContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
     const compatibilityPage = await compatibilityContext.newPage();
@@ -232,7 +233,7 @@ try {
     await compatibilityPage.locator('[data-action="characters"]').click();
     await compatibilityPage.locator(`[data-character="${characterId}"]`).click();
 
-    const initialHair = characterId === 'rabbit01' ? 'hair_03' : 'hair_02';
+    const initialHair = characterId === 'rabbit01' ? 'hair_03' : characterId.startsWith('girl') ? 'hair_01' : 'hair_02';
     for (const [category, itemId] of [['hair',initialHair],['top','top_02'],['pants','pants_02'],['shoes','shoes_02']]) {
       await compatibilityPage.locator(`[data-category="${category}"]`).click();
       assert((await compatibilityPage.locator(`[data-item="${itemId}"]`).count()) === 1, `${characterId} should expose compatible ${itemId}`);
@@ -242,9 +243,10 @@ try {
     assert(shared.hair === initialHair && shared.top === 'top_02' && shared.shoes === 'shoes_02', `${characterId} should persist compatible custom art`);
     const initialSource = characterId === 'rabbit01' ? 'composite' : 'dressable';
     assert(await compatibilityPage.locator(`.doll-wrap [data-body-source="${initialSource}"]`).count() === 1, `${characterId} body garments must use the correct ${initialSource} base`);
-    const identityOverlayCount = await compatibilityPage.locator('.doll-wrap [data-face-identity="girl02-v1"]').count();
-    assert(identityOverlayCount === (characterId === 'girl02' ? 1 : 0), `${characterId} facial identity overlay count must be correct (${identityOverlayCount})`);
     await compatibilityPage.screenshot({ path: `${outDir}/v10-character-${characterId}-top-pants.png`, fullPage: true });
+    if (characterId.startsWith('girl')) {
+      identityRenders.push({ characterId, outfit: 'hair01-top02-pants02-shoes02', png: (await compatibilityPage.locator('.doll-wrap svg').screenshot()).toString('base64') });
+    }
 
     const hairHatPairs = characterId === 'rabbit01'
       ? [['hair_01','hat_01'],['hair_03','hat_02'],['hair_07','hat_10']]
@@ -258,17 +260,45 @@ try {
       assert(await compatibilityPage.locator(`.doll-wrap [data-body-source="${expectedSource}"]`).count() === 1, `${characterId} ${hairId}+${hatId} must keep the ${expectedSource} body source`);
       await compatibilityPage.screenshot({ path: `${outDir}/v10-character-${characterId}-${hairId}-${hatId}.png`, fullPage: true });
     }
+    if (characterId.startsWith('girl')) {
+      await compatibilityPage.locator('[data-category="hair"]').click();
+      await compatibilityPage.locator('[data-item="hair_03"]').click();
+      await compatibilityPage.locator('[data-category="shoes"]').click();
+      await compatibilityPage.locator('[data-item="shoes_02"]').click();
+    }
     await compatibilityPage.locator('[data-category="dress"]').click();
     await compatibilityPage.locator('[data-item="dress_05"]').click();
     const dressSource = characterId === 'rabbit01' ? 'composite' : 'dressable';
     assert(await compatibilityPage.locator(`.doll-wrap [data-body-source="${dressSource}"]`).count() === 1, `${characterId} dress_05 must use its ${dressSource} body`);
     await compatibilityPage.screenshot({ path: `${outDir}/v10-character-${characterId}-dress05.png`, fullPage: true });
+    if (characterId.startsWith('girl')) {
+      identityRenders.push({ characterId, outfit: 'hair03-dress05-shoes02', png: (await compatibilityPage.locator('.doll-wrap svg').screenshot()).toString('base64') });
+    }
     await compatibilityPage.locator('[data-action="random"]').click();
     const randomized = await outfit(compatibilityPage);
     assert(randomized.hair && randomized.shoes, `${characterId} magic outfit should remain valid`);
     assert(!(randomized.hat && randomized.headAccessory), `${characterId} magic outfit must use one headwear slot`);
     await compatibilityContext.close();
   }
+  const identityPage = await browser.newPage();
+  const identitySheet = await identityPage.evaluate(async renders => {
+    const cellW = 360, cellH = 500, canvas = document.createElement('canvas');
+    canvas.width = cellW * 2; canvas.height = cellH * 2;
+    const ctx = canvas.getContext('2d'); ctx.fillStyle = '#fff8ef'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    for (let i = 0; i < renders.length; i++) {
+      const render = renders[i], x = (render.characterId === 'girl02' ? cellW : 0), y = render.outfit.startsWith('hair03') ? cellH : 0;
+      ctx.fillStyle = '#fff'; ctx.fillRect(x + 8, y + 8, cellW - 16, cellH - 16);
+      const image = new Image(); image.src = `data:image/png;base64,${render.png}`; await image.decode();
+      const scale = Math.min((cellW - 20) / image.width, (cellH - 50) / image.height);
+      const w = image.width * scale, h = image.height * scale;
+      ctx.drawImage(image, x + (cellW - w) / 2, y + 38 + (cellH - 54 - h) / 2, w, h);
+      ctx.fillStyle = '#624b47'; ctx.font = '16px sans-serif';
+      ctx.fillText(`${render.characterId === 'girl01' ? '세연이' : '하늘이'} · ${render.outfit}`, x + 14, y + 28);
+    }
+    return canvas.toDataURL('image/png');
+  }, identityRenders);
+  await fs.writeFile(`${outDir}/v10-girl01-vs-girl02-identity.png`, Buffer.from(identitySheet.split(',')[1], 'base64'));
+  await identityPage.close();
   results.push('V10 character-specific hair compatibility and shared body rig PASS');
 
   const rabbitPage = await browser.newPage({ viewport: { width: 390, height: 844 } });

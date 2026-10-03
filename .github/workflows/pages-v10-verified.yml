@@ -1,0 +1,93 @@
+name: Deploy V10 verified game to GitHub Pages
+
+on:
+  push:
+    branches:
+      - codex/v10-sync-reset
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-v10-verified
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout V10 source
+        uses: actions/checkout@v4
+        with:
+          ref: codex/v10-sync-reset
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check JavaScript syntax
+        run: |
+          node --check game.js
+          node --check data.js
+          node --check fit-engine.js
+          node --check outfit-rules.js
+          node --check sw.js
+          node --check assets/assetRegistry.js
+      - name: Validate data and rules
+        run: |
+          node check-data.js
+          node scripts/test-outfit-rules.js
+          node scripts/test-fit-engine.js
+          node scripts/test-character-compatibility.js
+          node audit-assets.js
+          node scripts/audit-story-mode.js --strict
+      - name: Verify runtime art copies
+        run: |
+          python -m pip install --disable-pip-version-check Pillow
+          python scripts/verify-runtime-assets.py
+      - name: Install Chromium
+        run: |
+          npm install --no-save --package-lock=false playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Run browser and visual regressions
+        run: |
+          python3 -m http.server 4173 >/tmp/seyeon-http.log 2>&1 &
+          node scripts/browser-smoke.mjs
+      - name: Upload V10 QA evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v10-browser-smoke
+          path: qa/v10-browser-smoke
+          if-no-files-found: warn
+
+  deploy:
+    needs: verify
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the exact verified V10 branch
+        uses: actions/checkout@v4
+        with:
+          ref: codex/v10-sync-reset
+      - name: Write deployment identity
+        shell: bash
+        run: |
+          SHA="$(git rev-parse HEAD)"
+          printf '{"channel":"v10-sync-reset","branch":"codex/v10-sync-reset","sha":"%s"}\n' "$SHA" > build-info.json
+          echo "Deploying $SHA"
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Upload verified static game
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: '.'
+      - name: Deploy verified V10
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -224,42 +224,50 @@ try {
   results.push('PWA service-worker offline reopen PASS');
   await offlineContext.close();
 
-  // V7+ shared preschool-v1 rig: custom wearables should remain selectable for all four characters.
+  // V10: shared body rig, with character-specific hair compatibility.
   for (const characterId of ['girl01', 'girl02', 'bear01', 'rabbit01']) {
     const compatibilityContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
     const compatibilityPage = await compatibilityContext.newPage();
     await compatibilityPage.goto(baseURL, { waitUntil: 'networkidle' });
     await compatibilityPage.locator('[data-action="characters"]').click();
     await compatibilityPage.locator(`[data-character="${characterId}"]`).click();
-    for (const [category, itemId] of [['hair','hair_02'],['top','top_02'],['pants','pants_02'],['shoes','shoes_02']]) {
+
+    const initialHair = characterId === 'rabbit01' ? 'hair_03' : 'hair_02';
+    for (const [category, itemId] of [['hair',initialHair],['top','top_02'],['pants','pants_02'],['shoes','shoes_02']]) {
       await compatibilityPage.locator(`[data-category="${category}"]`).click();
-      assert((await compatibilityPage.locator(`[data-item="${itemId}"]`).count()) === 1, `${characterId} should expose shared ${itemId}`);
+      assert((await compatibilityPage.locator(`[data-item="${itemId}"]`).count()) === 1, `${characterId} should expose compatible ${itemId}`);
       await compatibilityPage.locator(`[data-item="${itemId}"]`).click();
     }
     const shared = await outfit(compatibilityPage);
-    assert(shared.hair === 'hair_02' && shared.top === 'top_02' && shared.shoes === 'shoes_02', `${characterId} should persist shared-rig custom art`);
-    assert(await compatibilityPage.locator('.doll-wrap [data-body-source="dressable"]').count() === 1, `${characterId} body garments must replace the original base`);
-    await compatibilityPage.screenshot({ path: `${outDir}/v9-character-${characterId}-top-pants.png`, fullPage: true });
-    for (const [hairId, hatId] of [['hair_02','hat_01'],['hair_04','hat_02'],['hair_07','hat_10']]) {
+    assert(shared.hair === initialHair && shared.top === 'top_02' && shared.shoes === 'shoes_02', `${characterId} should persist compatible custom art`);
+    const initialSource = characterId === 'rabbit01' ? 'composite' : 'dressable';
+    assert(await compatibilityPage.locator(`.doll-wrap [data-body-source="${initialSource}"]`).count() === 1, `${characterId} body garments must use the correct ${initialSource} base`);
+    await compatibilityPage.screenshot({ path: `${outDir}/v10-character-${characterId}-top-pants.png`, fullPage: true });
+
+    const hairHatPairs = characterId === 'rabbit01'
+      ? [['hair_01','hat_01'],['hair_03','hat_02'],['hair_07','hat_10']]
+      : [['hair_02','hat_01'],['hair_04','hat_02'],['hair_07','hat_10']];
+    for (const [hairId, hatId] of hairHatPairs) {
       await compatibilityPage.locator('[data-category="hair"]').click();
       await compatibilityPage.locator(`[data-item="${hairId}"]`).click();
       await compatibilityPage.locator('[data-category="hat"]').click();
       await compatibilityPage.locator(`[data-item="${hatId}"]`).click();
-      const expectedSource = characterId === 'rabbit01' && hairId === 'hair_07' ? 'composite' : 'dressable';
+      const expectedSource = characterId === 'rabbit01' ? 'composite' : 'dressable';
       assert(await compatibilityPage.locator(`.doll-wrap [data-body-source="${expectedSource}"]`).count() === 1, `${characterId} ${hairId}+${hatId} must keep the ${expectedSource} body source`);
-      await compatibilityPage.screenshot({ path: `${outDir}/v9-character-${characterId}-${hairId}-${hatId}.png`, fullPage: true });
+      await compatibilityPage.screenshot({ path: `${outDir}/v10-character-${characterId}-${hairId}-${hatId}.png`, fullPage: true });
     }
     await compatibilityPage.locator('[data-category="dress"]').click();
     await compatibilityPage.locator('[data-item="dress_05"]').click();
     const dressSource = characterId === 'rabbit01' ? 'composite' : 'dressable';
     assert(await compatibilityPage.locator(`.doll-wrap [data-body-source="${dressSource}"]`).count() === 1, `${characterId} dress_05 must use its ${dressSource} body`);
-    await compatibilityPage.screenshot({ path: `${outDir}/v9-character-${characterId}-dress05.png`, fullPage: true });
+    await compatibilityPage.screenshot({ path: `${outDir}/v10-character-${characterId}-dress05.png`, fullPage: true });
     await compatibilityPage.locator('[data-action="random"]').click();
     const randomized = await outfit(compatibilityPage);
     assert(randomized.hair && randomized.shoes, `${characterId} magic outfit should remain valid`);
+    assert(!(randomized.hat && randomized.headAccessory), `${characterId} magic outfit must use one headwear slot`);
     await compatibilityContext.close();
   }
-  results.push('shared preschool-v1 custom art remains selectable for all 4 characters');
+  results.push('V10 character-specific hair compatibility and shared body rig PASS');
 
   const rabbitPage = await browser.newPage({ viewport: { width: 390, height: 844 } });
   await rabbitPage.goto(baseURL, { waitUntil: 'networkidle' });

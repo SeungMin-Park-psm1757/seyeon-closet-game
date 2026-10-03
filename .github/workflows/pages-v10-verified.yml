@@ -1,9 +1,9 @@
 name: Deploy V10 verified game to GitHub Pages
 
+# Direct V10 -> github-pages deployments are blocked by the repository's
+# current Pages environment policy. Production deployment uses the pinned
+# V7 Pages bridge after V10 validation succeeds.
 on:
-  push:
-    branches:
-      - codex/v10-sync-reset
   workflow_dispatch:
 
 permissions:

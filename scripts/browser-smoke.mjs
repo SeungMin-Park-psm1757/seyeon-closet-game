@@ -339,26 +339,58 @@ try {
   // Story mode: all five themes must open with custom backgrounds and recommendation UI.
   const storyContext = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
   const storyPage = await storyContext.newPage();
+  await storyPage.addInitScript(() => {
+    window.__bgmAudio = [];
+    window.__bgmPlayAttempts = [];
+    window.__rejectAudioOnce = '';
+    const NativeAudio = window.Audio;
+    window.Audio = function (src) {
+      const audio = new NativeAudio(src);
+      if (String(src).includes('/audio/')) window.__bgmAudio.push(audio);
+      return audio;
+    };
+    const nativePlay = HTMLMediaElement.prototype.play;
+    HTMLMediaElement.prototype.play = function (...args) {
+      const src = this.currentSrc || this.src;
+      if (src.includes('/audio/')) {
+        window.__bgmPlayAttempts.push(src);
+        if (window.__rejectAudioOnce && src.endsWith(window.__rejectAudioOnce)) {
+          window.__rejectAudioOnce = '';
+          return Promise.reject(new DOMException('Simulated temporary playback denial', 'NotAllowedError'));
+        }
+      }
+      return nativePlay.apply(this, args);
+    };
+  });
   const storyThemes = [
-    ['picnic', 'dress'],
-    ['princess', 'dress'],
-    ['rainy', 'pants'],
-    ['birthday', 'dress'],
-    ['beach', 'dress']
+    ['picnic', 'dress', 'picnic-day.mp3'],
+    ['princess', 'dress', 'castle-ballroom.mp3'],
+    ['rainy', 'pants', 'rainy-day.mp3'],
+    ['birthday', 'dress', 'birthday-party.mp3'],
+    ['beach', 'dress', 'seashell-parade.mp3']
   ];
-  for (const [themeId, expectedCategory] of storyThemes) {
+  for (const [themeId, expectedCategory, expectedTrack] of storyThemes) {
     await storyPage.goto(baseURL, { waitUntil: 'networkidle' });
     await storyPage.locator('[data-action="stories"]').click();
     await storyPage.locator(`[data-theme="${themeId}"]`).click();
+    if (themeId === 'rainy') await storyPage.evaluate(() => { window.__rejectAudioOnce = 'rainy-day.mp3'; });
     await storyPage.locator('[data-character="girl01"]').click();
     await storyPage.waitForSelector('.editor-page');
+    if (themeId === 'rainy') {
+      await storyPage.waitForFunction(() => window.__rejectAudioOnce === '' && window.__bgmPlayAttempts.filter(src => src.endsWith('rainy-day.mp3')).length === 1);
+      await storyPage.locator(`[data-category="${expectedCategory}"]`).click();
+    }
+    await storyPage.waitForFunction(suffix => window.__bgmAudio.some(audio => audio.currentSrc.endsWith(suffix) && !audio.paused && audio.currentTime > .1), expectedTrack, { timeout: 10000 });
     const activeCategory = await storyPage.locator('.category-button.active').getAttribute('data-category');
     assert(activeCategory === expectedCategory, `${themeId} should open ${expectedCategory}, got ${activeCategory}`);
     const bgImage = await storyPage.locator('.stage-scene.has-art').evaluate(el => getComputedStyle(el).backgroundImage);
     assert(bgImage && bgImage !== 'none', `${themeId} must use custom background art`);
     assert(await storyPage.locator('.item-card.recommended').count() > 0, `${themeId} must show recommended items`);
+    assert(await storyPage.evaluate(suffix => window.__bgmPlayAttempts.some(src => src.endsWith(suffix)), expectedTrack), `${themeId} must select ${expectedTrack}`);
+    await storyPage.locator('[data-action="home"]').click();
+    await storyPage.waitForFunction(() => window.__bgmAudio.some(audio => audio.currentSrc.endsWith('seyeon-closet.mp3') && !audio.paused && audio.currentTime > .1), null, { timeout: 10000 });
   }
-  results.push('5/5 story themes browser flow PASS');
+  results.push('5/5 story music mappings, menu music, and rejected-play retry PASS');
 
   // Photo album save/restore rendering.
   await storyPage.goto(baseURL, { waitUntil: 'networkidle' });

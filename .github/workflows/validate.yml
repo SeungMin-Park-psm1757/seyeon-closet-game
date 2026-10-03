@@ -12,6 +12,7 @@ on:
       - codex/v7-unified-character-art
       - codex/v8-fit-engine-audit
       - codex/v9-luna-fit-art-completion
+      - codex/v9-bgm-playback-fix
       - feature/kids-dressup-game-v1
       - main
   pull_request:

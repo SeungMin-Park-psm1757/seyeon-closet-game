@@ -27,7 +27,7 @@
   };
   const railScroll = { categories: 0, items: Object.create(null) };
   let renderedCategoryId = state.categoryId;
-  let context = null, beat = 0, bgmTimer = 0, activeBgmFile = '', toastTimer = 0;
+  let context = null, beat = 0, bgmTimer = 0, activeBgmFile = '', pendingBgmPlay = null, toastTimer = 0;
   const phrases = ['예쁘다!', '멋져요!', '정말 잘 골랐어요!', '짜잔!'];
 
   function persist() {
@@ -225,16 +225,39 @@
     gain.gain.setValueAtTime(.0001, now); gain.gain.exponentialRampToValueAtTime(type === 'complete' ? .045 : .025, now + .015); gain.gain.exponentialRampToValueAtTime(.0001, now + .17);
     osc.connect(gain); gain.connect(context.destination); osc.start(now); osc.stop(now + .18);
   }
+  function attemptBgmPlay(audio) {
+    if (pendingBgmPlay === audio) return;
+    pendingBgmPlay = audio;
+    try {
+      audio.play().catch(() => {
+        if (state.sound === audio) stopBgm();
+      }).finally(() => {
+        if (pendingBgmPlay === audio) pendingBgmPlay = null;
+      });
+    } catch {
+      if (state.sound === audio) stopBgm();
+      if (pendingBgmPlay === audio) pendingBgmPlay = null;
+    }
+  }
   function startBgm() {
-    if (state.muted) return;
+    if (state.muted) { stopBgm(); return; }
     const audio = window.ASSETS.audio;
-    const file = state.mode === 'story' && audio.themes?.[state.themeId] || audio.bgm;
-    if (bgmTimer && file === activeBgmFile) return;
+    const playingStory = state.mode === 'story' && ['editor', 'finish'].includes(state.view);
+    const file = playingStory && audio.themes?.[state.themeId] || audio.bgm;
+    if (file && state.sound && file === activeBgmFile) {
+      if (state.sound.paused || state.sound.ended) attemptBgmPlay(state.sound);
+      return;
+    }
+    if (!file && bgmTimer) return;
     stopBgm();
     if (file) {
-      state.sound = new Audio(file);
-      state.sound.loop = true; state.sound.volume = .18;
-      state.sound.play().catch(() => {}); activeBgmFile = file; bgmTimer = -1; return;
+      const music = new Audio(file);
+      state.sound = music;
+      music.loop = true; music.volume = .18;
+      activeBgmFile = file; bgmTimer = -1;
+      music.addEventListener('error', () => { if (state.sound === music) stopBgm(); }, { once: true });
+      attemptBgmPlay(music);
+      return;
     }
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     if (!AudioContext) return;
@@ -252,7 +275,7 @@
   function stopBgm() {
     if (bgmTimer > 0) clearInterval(bgmTimer);
     if (state.sound) { state.sound.pause(); state.sound.currentTime = 0; state.sound = null; }
-    activeBgmFile = ''; bgmTimer = 0;
+    activeBgmFile = ''; pendingBgmPlay = null; bgmTimer = 0;
   }
   function notice(message) {
     let toast = $('.toast');
@@ -398,6 +421,7 @@
       : state.view === 'finish' ? renderFinish()
       : renderAlbum();
     if (state.view === 'editor') restoreEditorUi(editorUi);
+    startBgm();
   }
 
   function begin(mode, themeId = '') {
@@ -429,10 +453,11 @@
   app.addEventListener('click', event => {
     const button = event.target.closest('button');
     if (!button) return;
+    if (button.dataset.action !== 'mute') startBgm();
     if (button.dataset.action) {
       const action = button.dataset.action;
-      play('tap'); startBgm();
-      if (action === 'mute') { state.muted = !state.muted; if (state.muted) stopBgm(); else startBgm(); persist(); render(); }
+      play('tap');
+      if (action === 'mute') { state.muted = !state.muted; if (state.muted) stopBgm(); persist(); render(); }
       else if (action === 'home') home();
       else if (action === 'back') { state.view = state.view === 'characters' && state.mode === 'story' ? 'themes' : 'home'; render(); }
       else if (action === 'characters') begin('free');
@@ -480,6 +505,7 @@
   app.addEventListener('keydown', event => {
     if (event.key === 'Escape' && state.view !== 'home') home();
   });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) startBgm(); });
   if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
     window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
   }

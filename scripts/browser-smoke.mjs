@@ -242,6 +242,8 @@ try {
     assert(shared.hair === initialHair && shared.top === 'top_02' && shared.shoes === 'shoes_02', `${characterId} should persist compatible custom art`);
     const initialSource = characterId === 'rabbit01' ? 'composite' : 'dressable';
     assert(await compatibilityPage.locator(`.doll-wrap [data-body-source="${initialSource}"]`).count() === 1, `${characterId} body garments must use the correct ${initialSource} base`);
+    const identityOverlayCount = await compatibilityPage.locator('.doll-wrap [data-face-identity="girl02-v1"]').count();
+    assert(identityOverlayCount === (characterId === 'girl02' ? 1 : 0), `${characterId} facial identity overlay count must be correct (${identityOverlayCount})`);
     await compatibilityPage.screenshot({ path: `${outDir}/v10-character-${characterId}-top-pants.png`, fullPage: true });
 
     const hairHatPairs = characterId === 'rabbit01'

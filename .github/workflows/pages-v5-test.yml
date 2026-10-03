@@ -1,10 +1,11 @@
-name: Deploy verified V10 game to GitHub Pages
+name: Deploy pinned V10 game to GitHub Pages
 
 on:
   push:
     branches:
       - codex/v7-unified-character-art
     paths:
+      - deploy/V10_DEPLOY_REF.txt
       - .github/workflows/pages-v5-test.yml
   workflow_dispatch:
 
@@ -24,26 +25,40 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout exact verified V10 source
+      - name: Checkout Pages bridge metadata
         uses: actions/checkout@v4
-        with:
-          ref: codex/v10-sync-reset
 
-      - name: Write deployment identity
+      - name: Read pinned verified V10 SHA
+        id: target
         shell: bash
         run: |
-          SHA="$(git rev-parse HEAD)"
-          printf '{"channel":"v10-sync-reset-via-v7-pages-bridge","branch":"codex/v10-sync-reset","sha":"%s"}\n' "$SHA" > build-info.json
-          echo "Deploying verified V10 $SHA"
+          SHA="$(tr -d '[:space:]' < deploy/V10_DEPLOY_REF.txt)"
+          test -n "$SHA"
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          echo "Pinned V10 SHA: $SHA"
+
+      - name: Checkout exact pinned V10 commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.target.outputs.sha }}
+          clean: true
+
+      - name: Verify checkout identity
+        shell: bash
+        run: |
+          ACTUAL="$(git rev-parse HEAD)"
+          test "$ACTUAL" = "${{ steps.target.outputs.sha }}"
+          printf '{"channel":"v10-sync-reset-via-v7-pages-bridge","branch":"codex/v10-sync-reset","sha":"%s"}\n' "$ACTUAL" > build-info.json
+          echo "Deploying verified V10 $ACTUAL"
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
 
-      - name: Upload verified V10 static game
+      - name: Upload pinned V10 static game
         uses: actions/upload-pages-artifact@v4
         with:
           path: '.'
 
-      - name: Deploy verified V10
+      - name: Deploy pinned V10
         id: deployment
         uses: actions/deploy-pages@v4

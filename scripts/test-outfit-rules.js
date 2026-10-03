@@ -46,6 +46,24 @@ assert.equal(shoesReplaced.shoes, 'shoes_02', 'shoes may still be replaced');
 const hairAgain = rules.applyItemSelection(shoesReplaced, 'hair_01', itemById);
 assert.equal(hairAgain.hair, 'hair_01', 'hair may not be removed');
 
+let headwear = rules.applyItemSelection(hairAgain, 'headAccessory_01', itemById);
+assert.equal(headwear.headAccessory, 'headAccessory_01');
+headwear = rules.applyItemSelection(headwear, 'hat_02', itemById);
+assert.equal(headwear.hat, 'hat_02');
+assert.equal(headwear.headAccessory, undefined, 'selecting a hat must clear the head accessory');
+headwear = rules.applyItemSelection(headwear, 'headAccessory_03', itemById);
+assert.equal(headwear.headAccessory, 'headAccessory_03');
+assert.equal(headwear.hat, undefined, 'selecting a head accessory must clear the hat');
+
+const normalizedHeadwear = rules.normalizeOutfit({ hair:'hair_01', shoes:'shoes_02', hat:'hat_01', headAccessory:'headAccessory_01' }, itemById);
+assert.equal(normalizedHeadwear.hat, 'hat_01');
+assert.equal(normalizedHeadwear.headAccessory, undefined, 'restored saves may not stack hat + head accessory');
+
+const rabbitUnsupported = rules.normalizeOutfit({ hair:'hair_02', shoes:'shoes_02' }, itemById, { characterId:'rabbit01' });
+assert.equal(rabbitUnsupported.hair, 'hair_01', 'rabbit must fall back from unsupported human hair to a compatible default');
+assert.equal(rules.isCompatible(itemById.hair_02, 'rabbit01'), false);
+assert.equal(rules.isCompatible(itemById.hair_03, 'rabbit01'), true);
+
 let seed = 0x5eed1234;
 const random = () => {
   seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
@@ -55,6 +73,7 @@ for (let i = 0; i < 100; i += 1) {
   const randomOutfit = rules.buildRandomOutfit(items, itemById, random);
   assert.equal(rules.hasConflict(randomOutfit), false, `random outfit ${i} must be conflict-free`);
   assert.ok(randomOutfit.hair, `random outfit ${i} must keep hair`);
+  assert.equal(Boolean(randomOutfit.hat && randomOutfit.headAccessory), false, `random outfit ${i} must not stack headwear`);
 }
 
-console.log('Outfit rules: selection, normalization, toggle, and 100 seeded random outfits PASS.');
+console.log('Outfit rules: body exclusivity, single headwear slot, character compatibility, and 100 seeded random outfits PASS.');

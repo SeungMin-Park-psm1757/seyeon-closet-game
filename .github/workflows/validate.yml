@@ -56,6 +56,11 @@ jobs:
       - name: Run browser smoke tests
         run: |
           python3 -m http.server 4173 >/tmp/seyeon-http.log 2>&1 &
+          for attempt in {1..20}; do
+            if curl --fail --silent http://127.0.0.1:4173/ >/dev/null; then break; fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:4173/ >/dev/null
           node scripts/browser-smoke.mjs
       - name: Upload browser QA screenshots
         if: always()

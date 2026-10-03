@@ -12,7 +12,7 @@ const assets = window.ASSETS;
 for (const [id, rawBounds] of Object.entries(assets.fitBounds || {})) {
   const item = itemById[id];
   assert.ok(item, `fitBounds references unknown item ${id}`);
-  assert.ok(['top', 'hat'].includes(item.category), `${id} should use a slot-supported category`);
+  assert.ok(['top', 'dress', 'hat'].includes(item.category), `${id} should use a slot-supported category`);
   assert.equal(rawBounds.length, 4, `${id} bounds must have four coordinates`);
   const result = fit.fitItem(item, assets);
   assert.ok(result && Number.isFinite(result.scale) && result.scale > 0, `${id} must produce a uniform fit`);
@@ -30,6 +30,14 @@ for (const id of ['top_01','top_02','top_03','top_04','top_05']) {
   assert.ok(r.renderedBounds.y + r.renderedBounds.height <= 279, `${id} should end around the waist slot`);
 }
 
+for (const id of Array.from({ length: 12 }, (_, index) => `dress_${String(index + 1).padStart(2, '0')}`)) {
+  const r = fit.fitItem(itemById[id], assets);
+  assert.ok(r, `${id} must use uniform dress slot fitting`);
+  assert.ok(r.renderedBounds.y >= 164.5 && r.renderedBounds.y <= 165.5, `${id} neckline/shoulder envelope must start at the shared dress slot`);
+  assert.ok(r.renderedBounds.y + r.renderedBounds.height <= 400.5, `${id} hem must stay within the knee-length envelope`);
+  assert.ok(r.renderedBounds.width <= 270.5, `${id} width must stay within the dress envelope`);
+}
+
 for (const id of ['hat_01','hat_02','hat_03','hat_04','hat_05','hat_06','hat_07','hat_08','hat_09','hat_10']) {
   const r = fit.fitItem(itemById[id], assets);
   assert.ok(r, `${id} must use V8 slot fitting`);
@@ -39,8 +47,8 @@ for (const id of ['hat_01','hat_02','hat_03','hat_04','hat_05','hat_06','hat_07'
 }
 
 assert.equal(itemById.hat_10.hatFit, 'ribbon', '리본 모자 must not fall back to a sunhat shape');
-assert.ok(!assets.itemTransforms?.top_01 && !assets.itemTransforms?.hat_01, 'tops/hats must not use legacy anisotropic transforms');
+assert.ok(!assets.itemTransforms?.top_01 && !assets.itemTransforms?.dress_11 && !assets.itemTransforms?.hat_01, 'tops/dresses/hats must not use legacy anisotropic transforms');
 assert.ok(!assets.itemTransforms?.hair_06 && !assets.itemTransforms?.hair_07, 'hair_06/07 must use their aligned full-canvas art without legacy transforms');
 assert.deepEqual(items.filter(item => item.category === 'hat').map(item => item.hatFit), ['cap','sunhat','beanie','crown','beanie','sunhat','cap','beanie','cap','ribbon'], 'all ten hats retain explicit semantic slots');
 
-console.log(`V9 fit engine: ${Object.keys(assets.fitBounds).length} measured items use uniform slot fitting; ten semantic hat mappings PASS.`);
+console.log(`V10 fit engine: ${Object.keys(assets.fitBounds).length} measured items use uniform top/dress/hat slot fitting; ten semantic hat mappings PASS.`);

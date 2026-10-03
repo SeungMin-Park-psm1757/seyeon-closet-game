@@ -1,6 +1,11 @@
-name: Deploy V5 test game to GitHub Pages
+name: Deploy verified V10 game to GitHub Pages
 
 on:
+  push:
+    branches:
+      - codex/v7-unified-character-art
+    paths:
+      - .github/workflows/pages-v5-test.yml
   workflow_dispatch:
 
 permissions:
@@ -19,17 +24,26 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout V5 test branch
+      - name: Checkout exact verified V10 source
         uses: actions/checkout@v4
+        with:
+          ref: codex/v10-sync-reset
+
+      - name: Write deployment identity
+        shell: bash
+        run: |
+          SHA="$(git rev-parse HEAD)"
+          printf '{"channel":"v10-sync-reset-via-v7-pages-bridge","branch":"codex/v10-sync-reset","sha":"%s"}\n' "$SHA" > build-info.json
+          echo "Deploying verified V10 $SHA"
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
 
-      - name: Upload static game
+      - name: Upload verified V10 static game
         uses: actions/upload-pages-artifact@v4
         with:
           path: '.'
 
-      - name: Deploy to GitHub Pages
+      - name: Deploy verified V10
         id: deployment
         uses: actions/deploy-pages@v4

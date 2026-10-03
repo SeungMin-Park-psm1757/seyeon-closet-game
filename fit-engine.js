@@ -10,6 +10,9 @@
 
   const SLOTS = {
     top: { x: 90, y: 168, width: 180, height: 110, alignX: 0.5, alignY: 0 },
+    // Dresses are generated independently, so their visible top edge ranges widely.
+    // Normalize the whole silhouette to one shoulder-to-knee envelope using one scale.
+    dress: { x: 45, y: 165, width: 270, height: 235, alignX: 0.5, alignY: 0 },
     hat: {
       // All hat slots share a ~y=108 lower/head-contact line.
       // fitToSlot uses one scale only: artwork may become smaller, never squashed.
@@ -43,6 +46,7 @@
   function slotFor(item) {
     if (!item) return null;
     if (item.category === 'top') return SLOTS.top;
+    if (item.category === 'dress') return SLOTS.dress;
     if (item.category === 'hat') return SLOTS.hat[item.hatFit] || SLOTS.hat.cap;
     return null;
   }

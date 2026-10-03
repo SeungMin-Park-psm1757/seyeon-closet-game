@@ -18,14 +18,19 @@
     hat_01:'cap', hat_02:'sunhat', hat_03:'beanie', hat_04:'crown', hat_05:'beanie',
     hat_06:'sunhat', hat_07:'cap', hat_08:'beanie', hat_09:'cap', hat_10:'ribbon'
   };
+  const rabbitHairComposites = new Set(['hair_01', 'hair_03', 'hair_07']);
   const items = categories.flatMap(category => category.names.map((nameKo, i) => {
     const id = `${category.id}_${String(i + 1).padStart(2, '0')}`;
     const asset = window.ASSETS.items[id] || null;
+    const compatibleCharacters = category.id === 'hair' && !rabbitHairComposites.has(id)
+      ? ['girl01', 'girl02', 'bear01']
+      : undefined;
     return {
       id,
       category: category.id,
       nameKo,
       asset,
+      ...(compatibleCharacters ? { compatibleCharacters } : {}),
       ...(category.id === 'hat' ? { hatFit: hatFits[id] } : {}),
       tags: ['cute', `color-${i % colors.length}`],
       color: colors[i % colors.length],

@@ -13,6 +13,7 @@ on:
       - codex/v8-fit-engine-audit
       - codex/v9-luna-fit-art-completion
       - codex/v9-bgm-playback-fix
+      - codex/v10-sync-reset
       - feature/kids-dressup-game-v1
       - main
   pull_request:
@@ -60,8 +61,8 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: v9-browser-smoke
-          path: qa/v9-browser-smoke
+          name: v10-browser-smoke
+          path: qa/v10-browser-smoke
           if-no-files-found: warn
       - name: Audit alpha bounds
         if: always()

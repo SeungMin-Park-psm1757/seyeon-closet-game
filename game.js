@@ -154,20 +154,21 @@
     // a small nose and a different open-smile shape.
     const skin = person.skin || '#d99d72';
     return `<g data-face-identity="girl02-v1" pointer-events="none">
-      <path d="M139 105Q151 99 163 104M197 104Q209 99 221 105"
+      <path d="M139 94Q151 89 163 94M197 94Q209 89 221 94"
         fill="none" stroke="#6b4032" stroke-width="3.2" stroke-linecap="round"/>
-      <path d="M139 124l-6-4M141 129l-7-1M221 124l6-4M219 129l7-1"
+      <path d="M139 114l-6-4M141 119l-7-1M221 114l6-4M219 119l7-1"
         fill="none" stroke="#5b352d" stroke-width="2.4" stroke-linecap="round"/>
-      <path d="M178 144q2 3 5 0" fill="none" stroke="#b8694f" stroke-width="2.1" stroke-linecap="round"/>
+      <ellipse cx="180" cy="132" rx="9" ry="7" fill="${skin}" opacity=".97"/>
+      <path d="M178 131q2 3 5 0" fill="none" stroke="#b8694f" stroke-width="2.1" stroke-linecap="round"/>
       <g fill="#b86d4d" opacity=".78">
-        <circle cx="165" cy="147" r="1.35"/><circle cx="171" cy="149" r="1.15"/>
-        <circle cx="189" cy="149" r="1.15"/><circle cx="195" cy="147" r="1.35"/>
+        <circle cx="165" cy="134" r="1.35"/><circle cx="171" cy="136" r="1.15"/>
+        <circle cx="189" cy="136" r="1.15"/><circle cx="195" cy="134" r="1.35"/>
       </g>
-      <ellipse cx="180" cy="162" rx="18" ry="10" fill="${skin}" opacity=".97"/>
-      <path d="M166 159Q180 172 194 159Q192 174 180 176Q168 174 166 159Z"
+      <ellipse cx="180" cy="143" rx="18" ry="10" fill="${skin}" opacity=".98"/>
+      <path d="M166 140Q180 153 194 140Q192 155 180 157Q168 155 166 140Z"
         fill="#7f4338" stroke="#6d382f" stroke-width="1.6" stroke-linejoin="round"/>
-      <path d="M171 161Q180 166 189 161" fill="none" stroke="#fff3e8" stroke-width="2.2" stroke-linecap="round"/>
-      <path d="M174 171Q180 174 186 171" fill="none" stroke="#e88d92" stroke-width="2" stroke-linecap="round"/>
+      <path d="M171 142Q180 147 189 142" fill="none" stroke="#fff3e8" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M174 152Q180 155 186 152" fill="none" stroke="#e88d92" stroke-width="2" stroke-linecap="round"/>
     </g>`;
   }
 

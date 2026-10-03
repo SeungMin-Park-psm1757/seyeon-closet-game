@@ -2,7 +2,7 @@ import { chromium } from 'playwright';
 import fs from 'node:fs/promises';
 
 const baseURL = process.env.TEST_BASE_URL || 'http://127.0.0.1:4173/';
-const outDir = 'qa/v9-browser-smoke';
+const outDir = 'qa/v10-browser-smoke';
 await fs.mkdir(outDir, { recursive: true });
 
 function assert(condition, message) {
@@ -98,6 +98,19 @@ try {
   assert(value.hair && value.shoes && !(value.dress && (value.top || value.skirt || value.pants)), 'free-mode magic outfit must produce a valid outfit');
   await page.locator('[data-action="reset"]').click();
   results.push('free-mode undo, reset, and magic outfit PASS');
+
+  // Headwear is one preschool visual slot: no hat + head-accessory stacking.
+  await page.locator('[data-category="headAccessory"]').click();
+  await page.locator('[data-item="headAccessory_01"]').click();
+  await page.locator('[data-category="hat"]').click();
+  await page.locator('[data-item="hat_02"]').click();
+  value = await outfit(page);
+  assert(value.hat === 'hat_02' && !value.headAccessory, 'hat selection must clear head accessory');
+  await page.locator('[data-category="headAccessory"]').click();
+  await page.locator('[data-item="headAccessory_03"]').click();
+  value = await outfit(page);
+  assert(value.headAccessory === 'headAccessory_03' && !value.hat, 'head accessory selection must clear hat');
+  results.push('single headwear slot PASS');
 
   // Scroll position must survive item selection and delayed sparkle re-render.
   await page.locator('[data-category="dress"]').click();
@@ -252,6 +265,9 @@ try {
   await rabbitPage.goto(baseURL, { waitUntil: 'networkidle' });
   await rabbitPage.locator('[data-action="characters"]').click();
   await rabbitPage.locator('[data-character="rabbit01"]').click();
+  await rabbitPage.locator('[data-category="hair"]').click();
+  assert((await rabbitPage.locator('[data-item="hair_02"]').count()) === 0, 'rabbit must hide unsupported human long-wave hair');
+  assert((await rabbitPage.locator('[data-item="hair_03"]').count()) === 1, 'rabbit must keep supported composite hair');
   await rabbitPage.locator('[data-category="hair"]').click();
   await rabbitPage.locator('[data-item="hair_01"]').click();
   await rabbitPage.locator('[data-category="top"]').click();

@@ -129,7 +129,11 @@
           : art;
         return fittedArt;
       }
-      case 'headAccessory': return `<path d="M153 77Q139 50 166 53L180 69L194 53Q221 50 207 77L180 91Z" fill="${c}" stroke="#805366" stroke-width="4"/><circle cx="180" cy="76" r="7" fill="#ffe99a"/>`;
+      case 'headAccessory': {
+        const side = v % 2 === 0 ? 1 : -1;
+        const cx = side > 0 ? 220 : 140;
+        return `<g transform="translate(${cx} 73) scale(.58) translate(-180 -76)"><path d="M153 77Q139 50 166 53L180 69L194 53Q221 50 207 77L180 91Z" fill="${c}" stroke="#805366" stroke-width="4"/><circle cx="180" cy="76" r="7" fill="#ffe99a"/></g>`;
+      }
       case 'accessory': return v === 4 || v === 5 || v === 6
         ? person?.rigId === 'preschool-v1'
           ? `<g fill="none" stroke="${c}" stroke-width="6"><circle cx="144" cy="101" r="17"/><circle cx="216" cy="101" r="17"/><path d="M161 101Q180 93 199 101"/></g><circle cx="144" cy="101" r="3" fill="#513832"/><circle cx="216" cy="101" r="3" fill="#513832"/>`
